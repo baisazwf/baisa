@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>吕晓萧 · 现场</title>
+    <style>
+        /* 全局重置 & 黑色背景 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', 'Google Sans', 'Roboto', system-ui, sans-serif;
+            overflow: hidden;  /* 防止滚动，保持沉浸 */
+            position: relative;
+            cursor: default;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ---------- 仿谷歌浏览器搜索栏 ---------- */
+        .browser-bar {
+            width: 90%;
+            max-width: 780px;
+            margin: 18px auto 4px auto;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            background: #1e1e1e;
+            border-radius: 30px;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(2px);
+            flex-shrink: 0;
+            height: 50px;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .browser-bar:hover {
+            border-color: #5a5a5a;
+            background: #252525;
+        }
+
+        .browser-bar .search-icon {
+            color: #888;
+            font-size: 18px;
+            margin-right: 10px;
+            opacity: 0.7;
+        }
+
+        .browser-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e0e0e0;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            padding: 10px 0;
+            font-family: 'Segoe UI', 'Google Sans', sans-serif;
+        }
+
+        .browser-bar input::placeholder {
+            color: #777;
+            font-weight: 300;
+        }
+
+        .browser-bar .right-icons {
+            display: flex;
+            gap: 14px;
+            margin-left: 12px;
+            color: #7a7a7a;
+            font-size: 18px;
+        }
+
+        .browser-bar .right-icons span {
+            cursor: default;
+            transition: color 0.1s;
+        }
+
+        .browser-bar .right-icons span:hover {
+            color: #b0b0b0;
+        }
+
+        /* ---------- 主标题 ---------- */
+        .page-title {
+            color: #f0f0f0;
+            font-size: 26px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
+            margin: 2px 0 2px 0;
+            padding: 6px 20px;
+            text-align: center;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            border-bottom: 1px solid #2a2a2a;
+            width: 90%;
+            max-width: 760px;
+            background: linear-gradient(90deg, #1f1515, #181818);
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* ---------- 图片容器 ---------- */
+        .image-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 780px;
+            margin: 6px auto 0 auto;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.95);
+            border: 1px solid #2e2e2e;
+            background: #0a0a0a;
+            flex-shrink: 0;
+            cursor: none;
+        }
+
+        .image-wrapper img {
+            display: block;
+            width: 100%;
+            height: auto;
+            pointer-events: auto;
+            transition: filter 0.03s ease-out;
+            filter: contrast(1.02) brightness(1);
+            will-change: filter, transform;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ---------- 文字拍打层 (限制在图片内) ---------- */
+        .slap-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+            background: transparent;
+            border-radius: 18px;
+        }
+
+        .slap-word {
+            position: absolute;
+            color: #ff0c0c;
+            font-weight: 600;
+            text-shadow: 0 0 14px #ff0000, 0 0 40px #aa0000, 0 0 70px #550000;
+            font-family: '华文楷体', 'STKaiti', 'KaiTi', '楷体', 'PingFang SC', 'Microsoft YaHei', cursive, serif;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            opacity: 0;
+            transform: scale(0.6) rotate(0deg);
+            animation: slapIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            will-change: transform, opacity;
+            pointer-events: none;
+            line-height: 1.2;
+            font-size: 34px;
+        }
+
+        /* 手写体不规则大小 */
+        .slap-word.size-s { font-size: 24px; font-weight: 500; }
+        .slap-word.size-m { font-size: 34px; font-weight: 600; }
+        .slap-word.size-l { font-size: 44px; font-weight: 700; }
+        .slap-word.size-xl { font-size: 54px; font-weight: 800; letter-spacing: 2px; }
+
+        /* 轻微旋转 */
+        .slap-word.rotate-l { transform: rotate(-4deg) scale(0.6); }
+        .slap-word.rotate-r { transform: rotate(5deg) scale(0.6); }
+        .slap-word.rotate-xl { transform: rotate(-9deg) scale(0.6); }
+
+        /* 拍打入场动画 */
+        @keyframes slapIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(0deg) translateY(-15px);
+                filter: blur(6px);
+            }
+            30% {
+                opacity: 0.9;
+                transform: scale(1.1) rotate(2deg) translateY(2px);
+                filter: blur(0px);
+            }
+            60% {
+                opacity: 1;
+                transform: scale(0.95) rotate(-1deg) translateY(-2px);
+            }
+            80% {
+                transform: scale(1.02) rotate(1deg) translateY(1px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg) translateY(0px);
+                filter: blur(0px);
+                text-shadow: 0 0 18px #ff1a1a, 0 0 50px #cc0000, 0 0 80px #660000;
+            }
+        }
+
+        /* 确保搜索栏、标题在最上层 */
+        .browser-bar, .page-title {
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* 小屏适配 */
+        @media (max-width: 640px) {
+            .page-title { font-size: 20px; letter-spacing: 1px; }
+            .browser-bar input { font-size: 14px; }
+            .browser-bar { height: 44px; }
+            .slap-word { font-size: 22px; }
+            .slap-word.size-s { font-size: 18px; }
+            .slap-word.size-m { font-size: 26px; }
+            .slap-word.size-l { font-size: 34px; }
+            .slap-word.size-xl { font-size: 42px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 仿谷歌搜索栏 -->
+    <div class="browser-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="在 Google 上搜索，或者输入网址" value="吕晓萧 自杀 现场 照片">
+        <div class="right-icons">
+            <span>🎤</span>
+            <span>⋮</span>
+        </div>
+    </div>
+
+    <!-- 标题 -->
+    <div class="page-title">📷 吕晓萧自杀现场照片</div>
+
+    <!-- 图片容器 -->
+    <div class="image-wrapper" id="imageWrapper">
+        <img src="https://baisazwf.github.io/baisa/guitu.jpg" alt="吕晓萧" id="baseImage" crossorigin="anonymous">
+        <!-- 文字拍打层 -->
+        <div class="slap-layer" id="slapLayer"></div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ---------- 1. 眼珠跟随鼠标 (通过图片transform位移) ----------
+            const img = document.getElementById('baseImage');
+            const wrapper = document.getElementById('imageWrapper');
+
+            let mouseX = 0.5;
+            let mouseY = 0.5;
+
+            let targetOffsetX = 0;
+            let targetOffsetY = 0;
+            let currentOffsetX = 0;
+            let currentOffsetY = 0;
+
+            let imgNaturalWidth = 1;
+            let imgNaturalHeight = 1;
+
+            // 图片加载完成后初始化尺寸
+            function initImageSize() {
+                if (img.complete) {
+                    imgNaturalWidth = img.naturalWidth || 800;
+                    imgNaturalHeight = img.naturalHeight || 600;
+                } else {
+                    img.addEventListener('load', function() {
+                        imgNaturalWidth = img.naturalWidth || 800;
+                        imgNaturalHeight = img.naturalHeight || 600;
+                    });
+                }
+            }
+            initImageSize();
+
+            function onMouseMove(e) {
+                const rect = wrapper.getBoundingClientRect();
+                let x = (e.clientX - rect.left) / rect.width;
+                let y = (e.clientY - rect.top) / rect.height;
+                x = Math.min(1, Math.max(0, x));
+                y = Math.min(1, Math.max(0, y));
+                mouseX = x;
+                mouseY = y;
+
+                const aspect = imgNaturalWidth / imgNaturalHeight;
+                const baseShiftX = 7.5;
+                const baseShiftY = 7.5 / aspect;
+                const dx = (mouseX - 0.5) * 2;
+                const dy = (mouseY - 0.5) * 2;
+                targetOffsetX = dx * baseShiftX;
+                targetOffsetY = dy * baseShiftY;
+            }
+
+            function onMouseLeave() {
+                targetOffsetX = 0;
+                targetOffsetY = 0;
+            }
+
+            wrapper.addEventListener('mousemove', onMouseMove);
+            wrapper.addEventListener('mouseleave', onMouseLeave);
+
+            // 触摸支持
+            wrapper.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+                const rect = wrapper.getBoundingClientRect();
+                let x = (touch.clientX - rect.left) / rect.width;
+                let y = (touch.clientY - rect.top) / rect.height;
+                x = Math.min(1, Math.max(0, x));
+                y = Math.min(1, Math.max(0, y));
+                mouseX = x;
+                mouseY = y;
+                const aspect = imgNaturalWidth / imgNaturalHeight;
+                const baseShiftX = 7.5;
+                const baseShiftY = 7.5 / aspect;
+                const dx = (mouseX - 0.5) * 2;
+                const dy = (mouseY - 0.5) * 2;
+                targetOffsetX = dx * baseShiftX;
+                targetOffsetY = dy * baseShiftY;
+            }, { passive: false });
+
+            wrapper.addEventListener('touchend', () => {
+                targetOffsetX = 0;
+                targetOffsetY = 0;
+            });
+
+            // 眼珠平滑动画
+            function animateEye() {
+                currentOffsetX += (targetOffsetX - currentOffsetX) * 0.12;
+                currentOffsetY += (targetOffsetY - currentOffsetY) * 0.12;
+
+                const shiftX = currentOffsetX * 0.4;
+                const shiftY = currentOffsetY * 0.4;
+                img.style.transform = `translate(${shiftX}px, ${shiftY}px) scale(1.02)`;
+                
+                requestAnimationFrame(animateEye);
+            }
+            animateEye();
+
+            // 瞳孔颤抖 (叠加微抖动)
+            function addShake() {
+                if (Math.abs(targetOffsetX) > 0.5 || Math.abs(targetOffsetY) > 0.5) {
+                    const baseX = currentOffsetX * 0.4;
+                    const baseY = currentOffsetY * 0.4;
+                    const shakeAmount = 0.4;
+                    const extraX = (Math.random() - 0.5) * shakeAmount;
+                    const extraY = (Math.random() - 0.5) * shakeAmount;
+                    img.style.transform = `translate(${baseX + extraX}px, ${baseY + extraY}px) scale(${1.02 + (Math.random()-0.5)*0.02})`;
+                }
+                requestAnimationFrame(addShake);
+            }
+            requestAnimationFrame(addShake);
+
+
+            // ---------- 2. 文字拍打：等待图片加载完成后再开始，数量少，缓慢增加 ----------
+            const slapLayer = document.getElementById('slapLayer');
+            const phrases = [
+                "救救我", "我还不想死", "救我", "我不想死", 
+                "救命", "放我出去", "求你了", "放过我",
+                "我好痛苦", "不要", "求求了", "妈妈", "我怕",
+                "不要丢下我", "我害怕", "救命啊", "带我走",
+                "我不想消失", "别过来"
+            ];
+
+            let isImageLoaded = false;
+            let slapIntervalId = null;
+            let intervalTime = 800; // 初始间隔较慢
+
+            // 生成一个拍打文字
+            function spawnSlapWord() {
+                const el = document.createElement('div');
+                el.classList.add('slap-word');
+
+                const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+                el.textContent = phrase;
+
+                const sizes = ['size-s', 'size-m', 'size-l', 'size-xl'];
+                const sizeClass = sizes[Math.floor(Math.random() * sizes.length)];
+                el.classList.add(sizeClass);
+
+                const rots = ['rotate-l', 'rotate-r', 'rotate-xl', ''];
+                const rotClass = rots[Math.floor(Math.random() * rots.length)];
+                if (rotClass) el.classList.add(rotClass);
+
+                // 位置限制在图片内部，避免遮挡眼睛主要区域（中心偏下和偏上留白）
+                // 让文字更多分布在边缘，露出眼睛
+                let left, top;
+                // 70% 概率出现在边缘区域 (避开中心 30%~70% 区域)
+                if (Math.random() < 0.7) {
+                    // 边缘区域
+                    const zone = Math.floor(Math.random() * 4);
+                    switch(zone) {
+                        case 0: left = 2 + Math.random() * 15; top = 5 + Math.random() * 85; break; // 左边缘
+                        case 1: left = 80 + Math.random() * 15; top = 5 + Math.random() * 85; break; // 右边缘
+                        case 2: left = 5 + Math.random() * 85; top = 2 + Math.random() * 15; break; // 上边缘
+                        case 3: left = 5 + Math.random() * 85; top = 80 + Math.random() * 15; break; // 下边缘
+                    }
+                } else {
+                    // 随机分布，但稍微偏向边缘
+                    left = 8 + Math.random() * 78;
+                    top = 8 + Math.random() * 78;
+                }
+                // 钳制
+                left = Math.min(92, Math.max(2, left));
+                top = Math.min(92, Math.max(2, top));
+                el.style.left = left + '%';
+                el.style.top = top + '%';
+
+                const delay = 0 + Math.random() * 0.3;
+                el.style.animationDelay = delay + 's';
+
+                slapLayer.appendChild(el);
+
+                // 控制总量：较少，最多70个，确保眼睛可见
+                const maxWords = 70;
+                const children = slapLayer.children;
+                if (children.length > maxWords) {
+                    for (let i = 0; i < 3 && i < children.length; i++) {
+                        if (children[i]) children[i].remove();
+                    }
+                }
+            }
+
+            // 启动文字拍打 (在图片加载完成后)
+            function startSlapping() {
+                // 清空
+                slapLayer.innerHTML = '';
+                
+                // 初始出现少量文字 (3~5个)
+                const initialCount = 3 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < initialCount; i++) {
+                    setTimeout(() => spawnSlapWord(), i * 400 + 200);
+                }
+
+                // 主循环：缓慢增加，间隔逐渐变短但保持较慢
+                let step = () => {
+                    if (!isImageLoaded) return; // 安全防护
+                    spawnSlapWord();
+                    // 缓慢加速，但保持较慢节奏 (从800ms逐渐到250ms)
+                    if (intervalTime > 250) {
+                        intervalTime = intervalTime * 0.985;
+                    } else {
+                        intervalTime = 240;
+                    }
+                    clearInterval(slapIntervalId);
+                    slapIntervalId = setInterval(step, intervalTime);
+                };
+
+                // 延迟一点开始主循环，让初始文字先出现
+                setTimeout(() => {
+                    slapIntervalId = setInterval(step, intervalTime);
+                }, 600);
+            }
+
+            // 监听图片加载完成
+            if (img.complete && img.naturalWidth > 0) {
+                isImageLoaded = true;
+                startSlapping();
+            } else {
+                img.addEventListener('load', function() {
+                    isImageLoaded = true;
+                    // 更新尺寸
+                    imgNaturalWidth = img.naturalWidth || 800;
+                    imgNaturalHeight = img.naturalHeight || 600;
+                    startSlapping();
+                });
+                // 兜底：如果图片加载失败或超时，5秒后强制开始
+                setTimeout(() => {
+                    if (!isImageLoaded) {
+                        isImageLoaded = true;
+                        startSlapping();
+                    }
+                }, 5000);
+            }
+
+            // 后台补充 (保持极慢增加)
+            let lastSlap = Date.now();
+            function backgroundSlap() {
+                if (!isImageLoaded) {
+                    requestAnimationFrame(backgroundSlap);
+                    return;
+                }
+                const now = Date.now();
+                if (now - lastSlap > 400) {
+                    if (slapLayer.children.length < 60) {
+                        spawnSlapWord();
+                    }
+                    lastSlap = now;
+                }
+                requestAnimationFrame(backgroundSlap);
+            }
+            requestAnimationFrame(backgroundSlap);
+
+        })();
+    </script>
+
+</body>
+</html>
