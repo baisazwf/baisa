@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书 · 发现</title>
+<style>
+  :root{
+    --red:#ff2442;
+    --red-dark:#e51c38;
+    --red-soft:#fff0f2;
+    --text:#1f1f1f;
+    --text2:#4d4d4d;
+    --sub:#9a9a9a;
+    --line:#f0f0f0;
+    --chip:#f6f6f6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:#fff;color:var(--text);overflow-x:hidden;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:inherit;outline:none;border:none;background:none;color:inherit}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:99px}
+  ::-webkit-scrollbar-thumb:hover{background:#c4c4c4}
+
+  /* ============ 左侧导航 ============ */
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;width:212px;
+    padding:22px 14px 18px;border-right:1px solid var(--line);
+    display:flex;flex-direction:column;gap:4px;background:#fff;z-index:60;
+  }
+  .brand{display:flex;align-items:center;gap:9px;padding:0 10px 20px}
+  .brand-mark{
+    width:30px;height:30px;border-radius:9px;background:var(--red);color:#fff;
+    display:grid;place-items:center;font-size:16px;font-weight:800;
+    box-shadow:0 4px 10px rgba(255,36,66,.32);
+  }
+  .brand-name{font-size:17px;font-weight:800;letter-spacing:.5px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+    font-size:15px;color:var(--text2);font-weight:500;transition:.16s;width:100%;text-align:left;
+  }
+  .nav-item .ic{font-size:18px;width:22px;text-align:center}
+  .nav-item:hover{background:#fafafa}
+  .nav-item.on{background:var(--red-soft);color:var(--red);font-weight:700}
+  .nav-item.pub{background:var(--red);color:#fff;justify-content:center;font-weight:700;margin:6px 0 10px;
+    box-shadow:0 6px 16px rgba(255,36,66,.3);}
+  .nav-item.pub:hover{background:var(--red-dark)}
+  .side-cap{font-size:12px;color:var(--sub);padding:14px 14px 8px;letter-spacing:.4px}
+  .follow{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:12px;font-size:13.5px;color:var(--text2);
+    width:100%;text-align:left;transition:.15s}
+  .follow:hover{background:#fafafa}
+  .av{
+    width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px;flex:none;
+    background:var(--chip);
+  }
+  .side-foot{margin-top:auto;font-size:11px;color:#c2c2c2;padding:10px 14px;line-height:1.7}
+
+  /* ============ 主体 ============ */
+  .main{margin-left:212px;min-height:100vh}
+  .topbar{
+    position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);
+    padding:14px 32px 0;display:flex;flex-direction:column;gap:13px;
+  }
+  .tb-row{display:flex;align-items:center;gap:10px;min-height:34px}
+  .tb-row.tabs-row{padding-bottom:5px;border-bottom:1px solid #f0f0f0}
+  .tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    padding:6px 12px;border-radius:6px;font-size:15px;color:#666;white-space:nowrap;
+    font-weight:400;transition:color .16s;
+  }
+  .tab:hover{color:#1f1f1f}
+  .tab.on{color:#1f1f1f;font-weight:600}
+  .search{
+    display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:99px;
+    padding:9px 16px;width:460px;max-width:54vw;flex:none;transition:.2s;
+  }
+  .search:focus-within{background:#fff;box-shadow:0 0 0 2px var(--red) inset,0 4px 14px rgba(0,0,0,.06)}
+  .search input{flex:1;font-size:13.5px;min-width:0}
+  .search .mag{color:var(--sub);font-size:14px}
+  .bell{position:relative;font-size:19px;padding:6px;border-radius:10px;transition:.15s}
+  .bell:hover{background:#fafafa}
+  .bell .dot{position:absolute;top:2px;right:0;min-width:16px;height:16px;border-radius:9px;background:var(--red);
+    color:#fff;font-size:10px;display:grid;place-items:center;padding:0 4px;font-weight:700}
+  .me-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ffb3c1,#ff6f8b);
+    display:grid;place-items:center;font-size:17px;cursor:pointer;border:2px solid #fff;
+    box-shadow:0 2px 8px rgba(255,36,66,.25)}
+
+  .feed{position:relative;padding:8px 32px 120px;transition:height .3s}
+  .card{
+    position:absolute;top:0;left:0;width:240px;
+    transition:transform .38s cubic-bezier(.22,.8,.28,1);cursor:pointer;
+  }
+  .card .cover{
+    position:relative;border-radius:8px;overflow:hidden;isolation:isolate;background:#f2f2f2;
+  }
+  .card .cover .layer{position:absolute;inset:0}
+  .card .cover::after{
+    content:"";position:absolute;inset:0;border-radius:8px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.05) inset;pointer-events:none;z-index:2;
+  }
+  .cv-img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform .45s cubic-bezier(.22,.9,.3,1);user-select:none;
+  }
+  .card:hover .cv-img{transform:scale(1.06)}
+  .card:hover .cv-emoji{transform:scale(1.09) rotate(-4deg)}
+  .card:hover .cover{box-shadow:0 10px 24px rgba(0,0,0,.1)}
+  .cv-emoji{
+    position:absolute;inset:0;display:grid;place-items:center;font-size:62px;
+    transition:transform .45s cubic-bezier(.22,.9,.3,1);filter:drop-shadow(0 8px 14px rgba(0,0,0,.14));
+  }
+  .cv-big{
+    position:absolute;left:16px;right:16px;bottom:16px;font-size:21px;font-weight:900;line-height:1.28;
+    letter-spacing:.5px;word-break:break-word;
+  }
+  .cv-tag{
+    position:absolute;top:12px;left:12px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;
+    background:rgba(0,0,0,.42);color:#fff;backdrop-filter:blur(4px);display:flex;align-items:center;gap:3px;
+  }
+  .cv-tag.hot{background:var(--red);box-shadow:0 3px 10px rgba(255,36,66,.4)}
+  .cv-fwd{
+    position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;
+    background:rgba(255,255,255,.92);color:var(--red);
+  }
+  .cv-loc{
+    position:absolute;left:14px;top:12px;font-size:11px;color:rgba(255,255,255,.92);
+    display:flex;gap:3px;align-items:center;
+  }
+  .c-meta{padding:9px 2px 0}
+  .c-title{font-size:14px;font-weight:500;line-height:1.4;color:#333;display:-webkit-box;
+    -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+  .c-sub{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:6px}
+  .c-user{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+  .c-user .av{width:20px;height:20px;font-size:11px}
+  .c-user span{font-size:12px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c-like{display:flex;align-items:center;gap:3px;font-size:12px;color:#9a9a9a;flex:none;font-weight:500}
+  .c-like .ico{width:15px;height:15px;flex:none;transition:transform .18s}
+  .c-like.on{color:var(--red)}
+  .c-like.on .ico{animation:likeBounce .42s ease-out}
+  .c-like:hover .ico{transform:scale(1.14)}
+
+  /* ============ 弹层通用 ============ */
+  .mask{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;opacity:0;visibility:hidden;
+    transition:.22s;display:grid;place-items:center;padding:24px;
+  }
+  .mask.show{opacity:1;visibility:visible}
+  .panel{
+    background:#fff;border-radius:20px;transform:scale(.96) translateY(8px);transition:.26s cubic-bezier(.2,.9,.3,1);
+    max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.28);
+  }
+  .mask.show .panel{transform:none}
+
+  /* 详情 */
+  #detailPanel{width:min(1040px,100%);height:min(700px,90vh)}
+  .d-grid{display:grid;grid-template-columns:1.06fr .94fr;height:100%;min-height:0}
+  .d-stage{
+    position:relative;background:#f5f5f5;display:grid;place-items:center;overflow:hidden;
+    border-radius:20px 0 0 20px;
+  }
+  .d-img{position:relative;width:100%;height:100%;overflow:hidden;cursor:pointer}
+  .d-img .cv-img{object-fit:contain;transition:none}
+  .d-img .cv-emoji{font-size:130px}
+  .d-img .cv-big{font-size:30px;left:36px;right:36px;bottom:36px}
+  .d-close{
+    position:absolute;top:14px;left:14px;width:32px;height:32px;border-radius:50%;z-index:6;
+    background:rgba(0,0,0,.32);color:#fff;font-size:15px;display:grid;place-items:center;
+    backdrop-filter:blur(6px);transition:.16s;line-height:1;
+  }
+  .d-close:hover{background:rgba(0,0,0,.5);transform:scale(1.06)}
+  .d-nav{
+    position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;
+    background:rgba(255,255,255,.9);display:grid;place-items:center;font-size:14px;color:#333;z-index:3;
+    box-shadow:0 3px 12px rgba(0,0,0,.14);transition:.15s;
+  }
+  .d-nav:hover{background:#fff;transform:translateY(-50%) scale(1.08)}
+  .d-nav.prev{left:14px}.d-nav.next{right:14px}
+  .d-dots{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}
+  .d-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .d-dots i.on{background:#fff;width:16px;border-radius:99px}
+  .d-thumbs{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:4}
+  .d-thumbs img,.d-thumbs .th{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:16px;
+    border:2px solid transparent;opacity:.72;cursor:pointer;transition:.15s}
+  .d-thumbs .th.on{border-color:#fff;opacity:1;transform:translateY(-2px)}
+  .heart-pop{
+    position:absolute;font-size:80px;pointer-events:none;animation:pop .8s ease-out forwards;z-index:9;
+  }
+  @keyframes pop{
+    0%{transform:translate(-50%,-50%) scale(.2);opacity:0}
+    35%{transform:translate(-50%,-50%) scale(1.15);opacity:1}
+    100%{transform:translate(-50%,-90%) scale(.7);opacity:0}
+  }
+
+  .d-side{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--line)}
+  .d-head{display:flex;align-items:center;gap:10px;padding:18px 22px 12px;flex:none}
+  .d-head .av{width:38px;height:38px;font-size:19px}
+  .d-uinfo{flex:1;min-width:0}
+  .d-uname{font-size:14px;font-weight:700;display:flex;align-items:center;gap:5px}
+  .d-ubio{font-size:11.5px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .d-follow{
+    font-size:12.5px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:99px;
+    padding:5px 15px;transition:.16s;flex:none;
+  }
+  .d-follow:hover{background:var(--red-soft)}
+  .d-follow.on{color:var(--sub);border-color:#e2e2e2}
+  .d-follow.on:hover{background:#fafafa}
+  .d-body{flex:1;overflow-y:auto;padding:0 22px 14px;min-height:0}
+  .d-title{font-size:17px;font-weight:800;line-height:1.4;margin:2px 0 10px}
+  .d-text{font-size:14.5px;line-height:1.85;color:#2c2c2c;white-space:pre-wrap;word-break:break-word}
+  .d-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .d-tags b{font-size:12.5px;color:#1e4bd8;font-weight:600}
+  .d-info{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:12px;color:var(--sub);flex-wrap:wrap}
+  .d-fwd-badge{
+    display:inline-flex;align-items:center;gap:6px;background:var(--red-soft);color:var(--red);
+    font-size:12px;font-weight:700;padding:5px 11px;border-radius:8px;margin-bottom:12px;
+  }
+  .d-cmt-cap{
+    font-size:13px;color:var(--sub);padding:16px 0 10px;border-top:1px solid var(--line);margin-top:18px;
+    display:flex;gap:8px;align-items:center;
+  }
+  .cmt{display:flex;gap:10px;padding:10px 0}
+  .cmt .av{width:30px;height:30px;font-size:15px}
+  .cmt-main{flex:1;min-width:0}
+  .cmt-name{font-size:12px;color:var(--sub);font-weight:600}
+  .cmt-text{font-size:13.5px;line-height:1.65;margin-top:3px;word-break:break-word;color:#2c2c2c}
+  .cmt-foot{display:flex;align-items:center;gap:18px;margin-top:6px;font-size:11.5px;color:#9a9a9a}
+  .cmt-foot .act{display:inline-flex;align-items:center;gap:4px;transition:.15s}
+  .cmt-foot .act .ico{width:14px;height:14px;flex:none;transition:transform .18s}
+  .cmt-foot .act:hover{color:#333}
+  .cmt-foot .act:hover .ico{transform:scale(1.14)}
+  .cmt-foot .act.on{color:var(--red)}
+  .cmt-foot .act.on .ico{animation:likeBounce .42s ease-out}
+  .cmt-reply{margin-left:0;padding-left:0}
+  /* ===== 底部操作栏：对齐小红书网页版 ===== */
+  .xhs-foot{
+    flex:none;display:flex;align-items:center;gap:2px;
+    padding:9px 16px 11px;border-top:1px solid #f0f0f0;background:#fff;
+  }
+  .xhs-input{
+    flex:1;min-width:60px;display:flex;align-items:center;height:38px;background:#f5f5f5;
+    border-radius:19px;padding:0 4px 0 16px;margin-right:6px;transition:background .18s;
+  }
+  .xhs-input:focus-within{background:#efefef}
+  .xhs-input input{flex:1;min-width:0;font-size:14px;color:#333}
+  .xhs-input input::placeholder{color:#b3b3b3}
+  .xhs-send{
+    font-size:13.5px;font-weight:600;color:var(--red);padding:6px 11px;border-radius:15px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .16s;
+  }
+  .xhs-send.show{opacity:1;pointer-events:auto}
+  .xhs-send:hover{background:#fff0f2}
+  .xhs-acts{display:flex;align-items:center;gap:1px;flex:none}
+  .xhs-act{
+    display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:10px;
+    color:#1f1f1f;flex:none;transition:background .16s;
+  }
+  .xhs-act:hover{background:#f7f7f7}
+  .xhs-act.on{color:var(--red)}
+  .xhs-act .ico{width:24px;height:24px;flex:none;transition:transform .18s}
+  .xhs-act:hover .ico{transform:scale(1.07)}
+  .xhs-act.on .ico{animation:likeBounce .42s ease-out}
+  .xhs-act .num{font-size:13px;color:#666;font-variant-numeric:tabular-nums;letter-spacing:.2px}
+  .xhs-act.on .num{color:var(--red)}
+  @keyframes likeBounce{
+    0%{transform:scale(1)}35%{transform:scale(1.34)}65%{transform:scale(.9)}100%{transform:scale(1)}
+  }
+  .d-spacer{flex:1}
+  .send{
+    background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:9px 18px;border-radius:99px;transition:.16s;
+  }
+  .send:hover{background:var(--red-dark)}
+  .send:disabled{background:#f2c6cd;cursor:not-allowed}
+
+  /* 发布 */
+  #pubPanel{width:min(760px,100%)}
+  .p-head{display:flex;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line);flex:none}
+  .p-head h3{margin:0;font-size:16px;flex:1;font-weight:800}
+  .p-close{font-size:20px;color:var(--sub);padding:2px 6px;border-radius:8px}
+  .p-close:hover{background:#f5f5f5}
+  .p-body{padding:20px 24px;overflow-y:auto}
+  .p-label{font-size:12.5px;color:var(--sub);font-weight:700;margin:0 0 10px;letter-spacing:.3px}
+  .p-covers{display:flex;gap:10px;flex-wrap:wrap}
+  .p-cv{
+    width:74px;height:74px;border-radius:12px;display:grid;place-items:center;font-size:30px;
+    border:2px solid transparent;cursor:pointer;transition:.15s;
+  }
+  .p-cv.on{border-color:var(--red);transform:translateY(-3px);box-shadow:0 8px 18px rgba(255,36,66,.2)}
+  .p-upload{
+    border:1.5px dashed #d8d8d8;background-color:#fafafa;color:#a0a0a0;font-size:24px;font-weight:300;
+    background-size:cover;background-position:center;position:relative;overflow:hidden;
+  }
+  .p-upload:hover{border-color:var(--red);color:var(--red)}
+  .p-upload.has{border-style:solid;border-color:var(--red);font-size:0}
+  .p-upload.has::before{
+    content:"换一张";position:absolute;left:0;right:0;bottom:0;font-size:11px;font-weight:600;
+    background:rgba(0,0,0,.45);color:#fff;padding:3px 0;text-align:center;
+  }
+  .p-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+  .p-emo{width:42px;height:42px;border-radius:11px;background:var(--chip);display:grid;place-items:center;font-size:20px;
+    border:2px solid transparent;transition:.15s}
+  .p-emo:hover{background:#eee}
+  .p-emo.on{border-color:var(--red);background:var(--red-soft)}
+  .p-grad{width:42px;height:42px;border-radius:11px;border:2px solid transparent;transition:.15s}
+  .p-grad.on{border-color:var(--red);transform:scale(1.06)}
+  .p-title{
+    width:100%;font-size:16px;font-weight:700;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:16px;
+  }
+  .p-text{
+    width:100%;font-size:14px;line-height:1.8;min-height:130px;resize:vertical;padding:4px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .p-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}
+  .p-tag{font-size:12.5px;color:#1e4bd8;background:#f0f4ff;padding:5px 12px;border-radius:99px;font-weight:600}
+  .p-tag:hover{background:#e3ecff}
+  .p-foot{display:flex;align-items:center;gap:12px;padding:14px 24px;border-top:1px solid var(--line);flex:none}
+  .p-count{font-size:12px;color:var(--sub);flex:1}
+  .ghost{font-size:13px;font-weight:700;padding:10px 20px;border-radius:99px;background:var(--chip);transition:.16s}
+  .ghost:hover{background:#ebebeb}
+
+  /* 分享 / 转发 */
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;z-index:130;
+    transform:translateY(102%);transition:transform .3s cubic-bezier(.2,.9,.3,1);
+    padding:20px 26px 30px;max-width:600px;margin:0 auto;box-shadow:0 -14px 40px rgba(0,0,0,.18);
+  }
+  .sheet.show{transform:none}
+  .sh-title{font-size:15px;font-weight:700;margin:0 0 14px;text-align:center;color:#1f1f1f}
+  .sh-preview{
+    display:flex;align-items:center;gap:11px;background:#f7f7f7;border-radius:12px;padding:9px 12px;margin-bottom:20px;
+  }
+  .sh-thumb{width:42px;height:42px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:20px;overflow:hidden}
+  .sh-ptitle{font-size:13px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;
+    -webkit-box-orient:vertical;overflow:hidden;color:#1f1f1f}
+  .sh-puser{font-size:11.5px;color:#9a9a9a;margin-top:3px}
+  .sh-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px 6px}
+  .sh-item{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11px;color:#616161}
+  .sh-ico{
+    width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;
+    transition:transform .16s,filter .16s;
+  }
+  .sh-ico .ico{width:24px;height:24px}
+  .sh-item:hover .sh-ico{transform:translateY(-3px) scale(1.05);filter:brightness(1.06)}
+  .sh-item:active .sh-ico{transform:scale(.94)}
+  .sh-svg{width:24px;height:24px;display:block}
+  .sh-fwd{margin-top:20px;display:none}
+  .sh-fwd.show{display:block}
+  .sh-fwd textarea{
+    width:100%;background:var(--chip);border-radius:12px;padding:12px 14px;font-size:13.5px;min-height:64px;
+    resize:none;line-height:1.6;
+  }
+  .sh-fwd .row{display:flex;justify-content:flex-end;margin-top:12px}
+  .sh-cancel{width:100%;margin-top:18px;padding:12px;border-radius:14px;background:var(--chip);font-size:14px;font-weight:700}
+  .sh-cancel:hover{background:#ebebeb}
+
+  /* 通知 */
+  #notiPanel{width:min(430px,100%);max-height:76vh}
+  .n-item{display:flex;gap:12px;padding:14px 22px;border-bottom:1px solid #fafafa}
+  .n-item .av{width:36px;height:36px;font-size:18px}
+  .n-main{flex:1;font-size:13.5px;line-height:1.6}
+  .n-main b{color:var(--red)}
+  .n-time{font-size:11px;color:#c4c4c4;margin-top:3px}
+
+  /* toast */
+  #toast{
+    position:fixed;left:50%;bottom:44px;transform:translate(-50%,24px);background:rgba(28,28,28,.9);color:#fff;
+    font-size:13.5px;font-weight:600;padding:11px 22px;border-radius:99px;opacity:0;visibility:hidden;
+    transition:.28s;z-index:300;backdrop-filter:blur(8px);
+  }
+  #toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+  /* 移动端 */
+  @media(max-width:900px){
+    .sidebar{display:none}
+    .main{margin-left:0}
+    .topbar{padding:10px 14px 0;gap:10px}
+    .search{width:auto;flex:1;max-width:none}
+    .bell,.me-av{display:none}
+    .feed{padding:8px 12px 100px}
+    .d-grid{grid-template-columns:1fr;grid-template-rows:minmax(220px,42vh) 1fr}
+    .d-stage{border-radius:20px 20px 0 0}
+    .d-side{border-left:none;border-top:1px solid var(--line)}
+    #detailPanel{height:94vh}
+    .mask{padding:0;align-items:flex-end}
+    #detailPanel,#pubPanel{width:100%;border-radius:20px 20px 0 0}
+    .xhs-act{padding:6px;gap:0}
+    .xhs-act .num{display:none}
+    .xhs-input{margin-right:2px;padding-left:14px}
+    .xhs-foot{padding:8px 10px 10px}
+    .mob-nav{
+      position:fixed;left:0;right:0;bottom:0;height:58px;background:rgba(255,255,255,.95);
+      backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;align-items:center;
+      justify-content:space-around;z-index:70;font-size:10px;color:var(--sub)
+    }
+    .mob-nav b{display:block;font-size:19px;font-weight:400;margin-bottom:1px}
+  }
+  @media(min-width:901px){.mob-nav{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ 左侧导航 ============ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">书</div>
+    <div class="brand-name">小红书</div>
+  </div>
+  <button class="nav-item on"><span class="ic">🏠</span>发现</button>
+  <button class="nav-item pub" id="navPub">＋ 发布</button>
+  <button class="nav-item" id="navNoti"><span class="ic">🔔</span>通知</button>
+  <button class="nav-item" id="navMe"><span class="ic">👤</span>我</button>
+  <div class="side-cap">我的关注</div>
+  <div id="sideFollows"></div>
+  <div class="side-foot">
+    用真实生活养号<br>内容纯属虚构 · 请勿对号入座
+  </div>
+</aside>
+
+<!-- ============ 主体 ============ -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-row">
+      <label class="search">
+        <span class="mag">🔍</span>
+        <input id="searchInput" placeholder="搜索小红书">
+      </label>
+      <div class="d-spacer"></div>
+      <button class="bell" id="bellBtn">🔔<span class="dot" id="bellDot">3</span></button>
+      <button class="me-av" id="meBtn" title="我">🙂</button>
+    </div>
+    <div class="tb-row tabs-row">
+      <nav class="tabs" id="tabs"></nav>
+    </div>
+  </header>
+  <div class="feed" id="feed"></div>
+</div>
+
+<nav class="mob-nav">
+  <button><b>🏠</b>发现</button>
+  <button id="mobPub"><b style="color:#ff2442">＋</b>发布</button>
+  <button id="mobNoti"><b>🔔</b>通知</button>
+  <button><b>🙂</b>我</button>
+</nav>
+
+<!-- ============ 详情 ============ -->
+<div class="mask" id="detailMask">
+  <div class="panel" id="detailPanel">
+    <div class="d-grid">
+      <div class="d-stage">
+        <button class="d-close" id="dClose">✕</button>
+        <div class="d-img" id="dImg"></div>
+        <button class="d-nav prev" id="dPrev">‹</button>
+        <button class="d-nav next" id="dNext">›</button>
+        <div class="d-dots" id="dDots"></div>
+      </div>
+      <div class="d-side">
+        <div class="d-head">
+          <div class="av" id="dAv"></div>
+          <div class="d-uinfo">
+            <div class="d-uname" id="dName"></div>
+            <div class="d-ubio" id="dBio"></div>
+          </div>
+          <button class="d-follow" id="dFollow">关注</button>
+        </div>
+        <div class="d-body" id="dBody"></div>
+        <div class="xhs-foot">
+          <label class="xhs-input">
+            <input id="cmtInput" placeholder="说点什么...">
+            <button class="xhs-send" id="cmtSend">发送</button>
+          </label>
+          <div class="xhs-acts" id="xhsActs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 发布 ============ -->
+<div class="mask" id="pubMask">
+  <div class="panel" id="pubPanel">
+    <div class="p-head">
+      <h3>发布笔记</h3>
+      <button class="p-close" id="pubClose">✕</button>
+    </div>
+    <div class="p-body">
+      <p class="p-label">封面 · 从本地选一张图（不了选就用色块合成）</p>
+      <div class="p-covers" id="pCovers"></div>
+      <input type="file" id="pFile" accept="image/*" hidden>
+      <div style="height:18px"></div>
+      <p class="p-label">色块封面主图</p>
+      <div class="p-row" id="pEmo"></div>
+      <p class="p-label">色块封面大字（不填就没有）</p>
+      <input class="p-title" id="pubBig" placeholder="比如：我妈拆了我门锁" maxlength="12" style="font-size:15px;font-weight:800">
+      <div style="height:14px"></div>
+      <input class="p-title" id="pubTitle" placeholder="写个标题，别太端着" maxlength="22">
+      <textarea class="p-text" id="pubText" placeholder="正文…生活里那点事，随便写写"></textarea>
+      <div class="p-tags" id="pTags"></div>
+      <div class="p-foot">
+        <span class="p-count" id="pubCount">0 字</span>
+        <button class="ghost" id="pubRandom">随便来点</button>
+        <button class="send" id="pubSubmit">发布</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 分享 / 转发 ============ -->
+<div class="mask" id="shMask" style="background:rgba(0,0,0,.35);align-items:flex-end;padding:0;display:block">
+  <div class="sheet" id="shSheet">
+    <h3 class="sh-title">分享到</h3>
+    <div class="sh-preview" id="shPreview"></div>
+    <div class="sh-grid" id="shGrid"></div>
+    <div class="sh-fwd" id="shFwdBox">
+      <p class="p-label" style="margin-bottom:8px">转发到主页时想说点什么（可不填）</p>
+      <textarea id="shFwdText" placeholder="转发也算内容，别空着…"></textarea>
+      <div class="row"><button class="send" id="shFwdGo">确认转发</button></div>
+    </div>
+    <button class="sh-cancel" id="shCancel">取消</button>
+  </div>
+</div>
+
+<!-- ============ 通知 ============ -->
+<div class="mask" id="notiMask">
+  <div class="panel" id="notiPanel">
+    <div class="p-head"><h3>通知</h3><button class="p-close" id="notiClose">✕</button></div>
+    <div class="p-body" id="notiBody" style="padding:0"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =======================================================================
+   数据
+======================================================================= */
+const ME = { name:'我', av:'🙂' };
+const EMO_POOL = ['🚪','🐱','💼','🤖','🍉','🍜','🧋','🪴','🛗','⏰','📱','👕','🚲','🍲','🛒','🧺','🐟','🌙','🪑','🧊','📦','🍰'];
+const GRAD_POOL = [
+  ['#ffe3e8','#ffc2cf'],['#e6f0ff','#c3d9ff'],['#fff3d6','#ffe0a3'],
+  ['#e9fbe9','#c3f0c8'],['#f3e8ff','#dcc6ff'],['#ffe8d6','#ffc9a3'],
+  ['#e0fbf7','#b6f0e6'],['#ffe0e0','#ffbdbd'],['#eef0ff','#d3d8ff'],['#fdf0ff','#f5d4ff']
+];
+
+let uid = 0;
+const nid = () => 'u' + (++uid) + '_' + Math.random().toString(36).slice(2,6);
+
+const NOTES = [
+  {
+    id:'n1', cat:'情感', city:'上海', time:'3小时前', hot:true,
+    title:'我妈趁我上班，把我房间的门锁拆了',
+    body:'今天下班回家，钥匙插进去转了半天，门直接开了。\n我站在门口愣了三分钟，以为自己走错楼层。\n\n我妈在客厅择菜，头都没抬：「一家人要什么隐私，你锁门我拿个东西还得敲门，多麻烦。」\n\n我说那我把房门也拆了，咱们彻底一家人。她说好啊，反正你迟早要嫁出去。\n\n……我今年28，今天第一次认真思考了租房这件事。',
+    tags:['#家庭关系','#边界感','#成年人的崩溃瞬间'],
+    covers:[{e:'🚪',g:['#ffe3e8','#ffb6c6'],big:'我妈拆了我门锁'},{e:'🔑',g:['#fff3d6','#ffd98a'],big:'钥匙转了半天  门开了'}],
+    user:{n:'不睡觉的鱼',a:'🐟',bio:'一个情绪稳定的成年人（装的）'},
+    likes:12483, collects:2109, forwards:342,
+    comments:[
+      {u:'早八受害人',a:'😵',t:'这不是一家人，这是没有边界。姐妹你没错。',l:3821,time:'2小时前'},
+      {u:'热心市民王女士',a:'👩',t:'我外婆也这样，后来我把门反锁她还哭，说我不要她了……真的很难。',l:1204,time:'2小时前'},
+      {u:'阿柴今天也很困',a:'🐶',t:'重点是她还觉得这是爱你',l:997,time:'1小时前'},
+      {u:'月亮邮递员',a:'🌙',t:'蹲一个后续，楼主搬出去了记得更新',l:433,time:'1小时前'}
+    ]
+  },
+  {
+    id:'n2', cat:'宠物', city:'杭州', time:'6小时前',
+    title:'楼下便利店的三花今天带了三只崽来上班',
+    body:'它熟练地跳上收银台旁边的纸箱，把三只崽一只一只叼出来摆好，然后趴下喂奶。\n店主大哥一边扫货一边说：「它今天算加班，我给它开了一根肠。」\n\n我在那儿站了二十分钟，买了两瓶根本不喝的气泡水。',
+    tags:['#流浪猫','#治愈瞬间','#今天的快乐'],
+    covers:[{e:'🐱',g:['#fff3d6','#ffdf9e'],big:'三花今天带崽上班'},{e:'🥫',g:['#e6f0ff','#bcd6ff']},{e:'📦',g:['#ffe8d6','#ffcfa6'],big:'纸箱是它的工位'}],
+    user:{n:'草莓味的猫',a:'🍓',bio:'在家拍猫 出门拍猫 上班想猫'},
+    likes:23891, collects:6203, forwards:981,
+    comments:[
+      {u:'奶芙芙',a:'🧁',t:'纸箱是它的工位 这句话笑死我了',l:5620,time:'5小时前'},
+      {u:'我在人间凑数',a:'🧍',t:'两瓶根本不喝的气泡水 太真实了 我每次都这样',l:2311,time:'4小时前'},
+      {u:'已注销',a:'👻',t:'求便利店地址，我要去消费',l:876,time:'3小时前'}
+    ]
+  },
+  {
+    id:'n3', cat:'职场', city:'深圳', time:'昨天 22:14', hot:true,
+    title:'老板说我们是一个大家庭，然后让我周六来团建',
+    body:'原话：「我们不是一个公司，我们是一个大家庭。」\n我当时就觉得不对劲。\n\n果然，第二天他在群里发：\n「家人们，本周六团建，早上七点楼下集合，爬梧桐山，自愿参加❤️」\n\n我在群里回了个「收到」，然后私聊我组长：请问自愿是怎么个自愿法。\n组长回我：你懂的。\n\n我懂了。我现在准备把自己过继出去。',
+    tags:['#打工人','#职场吐槽','#团建文学'],
+    covers:[{e:'💼',g:['#eef0ff','#ccd3ff'],big:'我们是一个大家庭'},{e:'⛰️',g:['#e9fbe9','#b8eec0'],big:'周六早上七点  自愿'}],
+    user:{n:'摸鱼选手',a:'🐠',bio:'上班是为了下班'},
+    likes:31827, collects:8942, forwards:3204,
+    comments:[
+      {u:'早上起不来',a:'😴',t:'家人之间不用客气，我周六就不去了',l:9120,time:'昨天'},
+      {u:'小满',a:'🌾',t:'我们公司说「我们是一支军队」，然后让我们自己出钱买工装',l:4410,time:'昨天'},
+      {u:'不睡觉的鱼',a:'🐟',t:'大家庭的本质是：让你白干活还不好意思谈钱',l:3382,time:'20小时前'},
+      {u:'阿柴今天也很困',a:'🐶',t:'笑死 过继出去 这句话我能用一年',l:1201,time:'18小时前'}
+    ]
+  },
+  {
+    id:'n4', cat:'抽象', city:'北京', time:'5小时前',
+    title:'我家扫地机器人和猫，好像达成了某种默契',
+    body:'第一次，扫地机器人撞到了猫。\n第二次，扫地机器人绕开了猫。\n第三次，我发现猫自己挪到了墙角，机器人经过时还减速了一下。\n\n今天更离谱。猫把球滚到了机器人前面，机器人推着球走，猫在后面跟。\n它俩在客厅里转了一整个下午，我在旁边看完了。\n\n我突然觉得，这个家只有我是外人。',
+    tags:['#抽象','#猫','#精神状态良好'],
+    covers:[{e:'🤖',g:['#e0fbf7','#aeeade'],big:'它俩转了一下午'},{e:'🐈',g:['#f3e8ff','#d9bfff'],big:'猫：我先让一步'},{e:'⚽',g:['#fff3d6','#ffe0a3']}],
+    user:{n:'已注销',a:'👻',bio:'这个号已经注销了 但它还在发帖'},
+    likes:18922, collects:3301, forwards:772,
+    comments:[
+      {u:'奶芙芙',a:'🧁',t:'只有我是外人 哈哈哈哈哈哈笑不活了',l:3320,time:'4小时前'},
+      {u:'月亮邮递员',a:'🌙',t:'我家的扫地机器人被我猫当了坐骑，它现在会喊主人了（没有）',l:2109,time:'4小时前'},
+      {u:'热心市民王女士',a:'👩',t:'这个标题我读了三遍才反应过来谁是谁',l:640,time:'2小时前'}
+    ]
+  },
+  {
+    id:'n5', cat:'八卦', city:'上海', time:'40分钟前', hot:true,
+    title:'听说隔壁组leader和实习生在一起了（纯听说，别问我）',
+    body:'我先声明：只是听说。只是听说。只是听说。\n\n上周开始，他俩中午都一起出去吃饭，下午一起回来。\n周一早会散会以后，茶水间里六个人，没有一个人说话，全靠眼神。\n那个眼神交流我到现在都没忘。\n\n我什么都不知道，我也什么都没看见，我只是一台打印机。\n\n（如果当事人刷到了，真的不关我的事。）',
+    tags:['#办公室八卦','#吃瓜','#我只是一台打印机'],
+    covers:[{e:'🍉',g:['#ffe0e0','#ffbcbc'],big:'茶水间  六个人  零交流'},{e:'🫖',g:['#e9fbe9','#bdeec5']}],
+    user:{n:'吃瓜不吐皮',a:'🍉',bio:'公司内部的民间史官'},
+    likes:46120, collects:7033, forwards:9812,
+    comments:[
+      {u:'我在人间凑数',a:'🧍',t:'我什么都不知道，我也什么都没看见，我只是一台打印机。这句我要收藏',l:12033,time:'30分钟前'},
+      {u:'早八受害人',a:'😵',t:'茶水间的眼神交流 是全世界最危险的社交',l:5220,time:'28分钟前'},
+      {u:'已注销',a:'👻',t:'希望后续能出第二季',l:3320,time:'20分钟前'},
+      {u:'小满',a:'🌾',t:'提醒一下，这种事传出去对实习生最不利，吃瓜可以，别去问她。',l:8810,time:'15分钟前'}
+    ]
+  },
+  {
+    id:'n6', cat:'美食', city:'成都', time:'昨天 03:41',
+    title:'室友凌晨三点用电饭煲煮螺蛳粉',
+    body:'我被一股味道叫醒了。不是闹钟，是味道。\n\n我推开门，看见他在客厅，电饭煲开着盖，蒸汽往上冒，他戴着耳机在剪视频。\n我说你干嘛。\n他说：饿了。\n\n我说现在三点四十。\n他说：所以我没叫你。\n\n……有道理。我坐下了，他给我盛了一碗。\n我们俩凌晨四点，在客厅，吃螺蛳粉，一句话都没说。\n这是我今年最舒服的一个晚上。',
+    tags:['#宿舍生活','#深夜放毒','#成年人的友情'],
+    covers:[{e:'🍜',g:['#ffe8d6','#ffc79a'],big:'凌晨三点  电饭煲  螺蛳粉'},{e:'🍳',g:['#fff3d6','#ffdf9e']}],
+    user:{n:'夜宵监控员',a:'🍲',bio:'记录每一次不该吃的饭'},
+    likes:15602, collects:2841, forwards:520,
+    comments:[
+      {u:'阿柴今天也很困',a:'🐶',t:'所以我没叫你 哈哈哈哈 这才是室友',l:4210,time:'昨天'},
+      {u:'奶芙芙',a:'🧁',t:'螺蛳粉用了电饭煲 那电饭煲还能要吗',l:2109,time:'昨天'},
+      {u:'月亮邮递员',a:'🌙',t:'最后那句有点感动，怎么回事',l:1180,time:'20小时前'}
+    ]
+  },
+  {
+    id:'n7', cat:'情感', city:'广州', time:'昨天 21:03',
+    title:'相亲对象说他的人生目标是存够500万，然后去大理卖烤肠',
+    body:'他讲得非常认真，还给我看了他的记账表，Excel做得比我年终总结好看。\n\n我问他为什么是烤肠。\n他说：因为烤肠不用说话。\n\n我沉默了。我居然有点理解他。\n\n买单的时候他抢着付了，然后说：这顿算我请，但如果我们不合适，你能把我推荐给你朋友吗？我缺一点社交线索。\n\n……我到现在没想明白，我该不该把他推荐出去。',
+    tags:['#相亲日记','#成年人的选择','#烤肠'],
+    covers:[{e:'🌭',g:['#ffe8d6','#ffc79a'],big:'存够500万  去大理卖烤肠'},{e:'📊',g:['#e6f0ff','#c3d9ff'],big:'他的Excel比我的好看'}],
+    user:{n:'小满',a:'🌾',bio:'认真生活 认真吐槽'},
+    likes:20991, collects:5102, forwards:1408,
+    comments:[
+      {u:'不睡觉的鱼',a:'🐟',t:'因为烤肠不用说话。我哭了。',l:6210,time:'昨天'},
+      {u:'我在人间凑数',a:'🧍',t:'把你推荐给朋友 这句话是今年最抽象的表白',l:3310,time:'20小时前'},
+      {u:'热心市民王女士',a:'👩',t:'说实话，这个人目标清晰、会做表、还买单，不算差。',l:2210,time:'18小时前'}
+    ]
+  },
+  {
+    id:'n8', cat:'情感', city:'南京', time:'2天前',
+    title:'我把前任送的绿萝养死了，然后我居然有点爽',
+    body:'分手那天他说，这盆绿萝你留着吧，好养活。\n我养了八个月，它长得非常好，好到我每次看到它都觉得有点气。\n\n上个月我出差十天，回来它黄了。\n我站在那儿看了很久，然后把它扔了，扔完洗了个手，点了份炸鸡。\n\n没有难过。就是觉得，这件事终于结束了。\n\n（后来我又买了一盆，这盆是我自己买的。）',
+    tags:['#分手','#自我修复','#一盆绿萝的葬礼'],
+    covers:[{e:'🪴',g:['#e9fbe9','#b6ecc0'],big:'八个月后  它黄了'},{e:'🍗',g:['#fff3d6','#ffdf9e'],big:'然后我点了份炸鸡'}],
+    user:{n:'离开的第300天',a:'🌤️',bio:'在往前走了 别催'},
+    likes:17330, collects:4209, forwards:611,
+    comments:[
+      {u:'月亮邮递员',a:'🌙',t:'后来我又买了一盆，这盆是我自己买的。—— 这句是全文的重点',l:7220,time:'2天前'},
+      {u:'奶芙芙',a:'🧁',t:'我当年是把他的东西全塞箱子里寄了回去，运费到付',l:2210,time:'2天前'},
+      {u:'小满',a:'🌾',t:'恭喜。真的恭喜。',l:1402,time:'昨天'}
+    ]
+  },
+  {
+    id:'n9', cat:'抽象', city:'武汉', time:'8小时前', hot:true,
+    title:'小区电梯广告换成了相亲广告，主角是我妈拍的',
+    body:'上个月我妈说去趟居委会，我没多想。\n\n今天早上我进电梯，抬头一看：\n\n「幸福就在身边 —— 本小区优秀青年推荐」\n\n中间那张照片，是我妈翻我初中毕业照拍的。我穿着校服，笑得一脸茫然。\n下面写着：身高168，本科，性格温和，会做饭。\n\n我在电梯里站了一分钟，然后按了负一楼，买了包烟（我不抽烟）。\n\n物业说广告位是居委会租的，为期三个月。',
+    tags:['#亲妈行为','#社死现场','#电梯文学'],
+    covers:[{e:'🛗',g:['#eef0ff','#ccd3ff'],big:'幸福就在身边  为期三个月'},{e:'📸',g:['#ffe0e0','#ffbdbd'],big:'校服照  笑得一脸茫然'}],
+    user:{n:'电梯常驻居民',a:'🧑‍🚀',bio:'上下班路上会背广告词'},
+    likes:39218, collects:6210, forwards:4520,
+    comments:[
+      {u:'早八受害人',a:'😵',t:'买了包烟（我不抽烟） 这句话太有信息量了',l:10120,time:'7小时前'},
+      {u:'热心市民王女士',a:'👩',t:'阿姨这个执行力，去投商单吧',l:5320,time:'7小时前'},
+      {u:'已注销',a:'👻',t:'三个月，你熬一熬就过去了（不行就换个单元）',l:3102,time:'6小时前'}
+    ]
+  },
+  {
+    id:'n10', cat:'生活', city:'北京', time:'10小时前',
+    title:'早八实录：闹钟响了我第一反应是打它',
+    body:'不是按掉，是打。\n\n今天早上我砸下去的时候手都疼了，手机掉在地上，屏幕朝下。\n我捡起来看了三秒，确认没碎，然后躺回去又睡了七分钟。\n\n地铁上我在想：我恨的其实不是闹钟。\n我恨的是那个定闹钟的人，也是我自己。\n\n今天又是准点打卡的一天。我赢了（没有）。',
+    tags:['#早八','#精神状态','#打工人日常'],
+    covers:[{e:'⏰',g:['#fdf0ff','#f0c8ff'],big:'不是按掉  是打'},{e:'🚇',g:['#e6f0ff','#c3d9ff'],big:'地铁上的顿悟'}],
+    user:{n:'早八受害人',a:'😵',bio:'每天醒来的第一件事是后悔'},
+    likes:26330, collects:4109, forwards:820,
+    comments:[
+      {u:'摸鱼选手',a:'🐠',t:'我恨的是那个定闹钟的人 也是我自己 —— 好文案',l:6210,time:'9小时前'},
+      {u:'阿柴今天也很困',a:'🐶',t:'我定五个闹钟 前四个都被我打过了',l:3320,time:'8小时前'}
+    ]
+  },
+  {
+    id:'n11', cat:'职场', city:'上海', time:'昨天 18:22',
+    title:'同事在群里发了个「收到」，然后退了群',
+    body:'那个群是项目群，一共14个人。\n下午四点，甲方第27次改需求，组长@了全体。\n\n三分钟后，他发了「收到」。\n五分钟后，他退群了。\n\n我们剩下13个人，在群里安静了整整二十分钟。\n没有人敢说话，因为怕下一句就是自己。\n\n后来听说他去了隔壁楼的公司。上周我在地铁上碰到他，他胖了两斤，眼睛是亮的。',
+    tags:['#离职瞬间','#职场','#收到'],
+    covers:[{e:'📱',g:['#e6f0ff','#c3d9ff'],big:'「收到」  然后退群'},{e:'🚇',g:['#e9fbe9','#b9eec2'],big:'他胖了两斤  眼睛是亮的'}],
+    user:{n:'我在人间凑数',a:'🧍',bio:'打卡型选手'},
+    likes:28741, collects:5210, forwards:1330,
+    comments:[
+      {u:'小满',a:'🌾',t:'眼睛是亮的。这五个字比任何离职攻略都有说服力。',l:8120,time:'昨天'},
+      {u:'摸鱼选手',a:'🐠',t:'我上周也打了「收到」 但我没敢退 我退的是心',l:2210,time:'昨天'},
+      {u:'已注销',a:'👻',t:'甲方第27次改需求 这个数字太具体了 我信',l:1180,time:'20小时前'}
+    ]
+  },
+  {
+    id:'n12', cat:'搞笑', city:'重庆', time:'12小时前',
+    title:'楼道里的共享单车，被锁在了消防栓上',
+    body:'我拍了张照，看了很久。\n\n这是一道哲学题：\n他锁车，是为了不让别人骑走；\n他锁在消防栓上，是因为这里唯一能锁。\n他选了最不该选的地方，只因为他想省两步路。\n\n物业第二天贴了张纸：「请勿在此锁车」。\n第三天，车还在。\n第四天，纸上多了一行字：「那你说我锁哪」\n\n……我觉得他说得也有点道理。',
+    tags:['#抽象','#城市观察','#那你说我锁哪'],
+    covers:[{e:'🚲',g:['#fff3d6','#ffe0a3'],big:'共享单车  锁在消防栓上'},{e:'📄',g:['#f0f0f0','#dcdcdc'],big:'那你说我锁哪'}],
+    user:{n:'路过的第三个人',a:'🚶',bio:'走路的时候会一直看地面'},
+    likes:22109, collects:3012, forwards:990,
+    comments:[
+      {u:'热心市民王女士',a:'👩',t:'那你说我锁哪 我笑到隔壁敲门',l:6210,time:'11小时前'},
+      {u:'奶芙芙',a:'🧁',t:'从哲学题到辩论赛，这个楼道很卷',l:2210,time:'10小时前'}
+    ]
+  },
+  {
+    id:'n13', cat:'美食', city:'杭州', time:'昨天 19:50',
+    title:'我一个人去吃火锅，服务员给我对面放了个玩偶',
+    body:'我说不用，他说这是店里的规定，一个人来都会放。\n\n然后那个玩偶就坐在我对面，看着我吃。\n我涮毛肚的时候它看着我。\n我喝酸梅汤的时候它看着我。\n\n我莫名其妙开始跟它说：这个锅底有点咸。\n它没说话。\n\n结账的时候，服务员说：玩偶帮您收起来了吗？\n我说：不用，我自己收。\n\n我把它放回了门口的架子上。它排在一排玩偶里，还是看着我。',
+    tags:['#一人食','#独居生活','#一个人也要好好吃饭'],
+    covers:[{e:'🍲',g:['#ffe0e0','#ffb8b8'],big:'它坐在我对面  看着我吃'},{e:'🧸',g:['#fdf0ff','#f2d0ff'],big:'它没说话'}],
+    user:{n:'一个人吃很多',a:'🥢',bio:'独居第六年 饭量没减'},
+    likes:19420, collects:3802, forwards:701,
+    comments:[
+      {u:'小满',a:'🌾',t:'“这个锅底有点咸” 我看到这句直接破防',l:5210,time:'昨天'},
+      {u:'月亮邮递员',a:'🌙',t:'我一个人去吃烤肉的时候，服务员给我对面放了个空盘子，我谢谢她',l:2210,time:'20小时前'},
+      {u:'不睡觉的鱼',a:'🐟',t:'放回架子上的那一刻有点想哭',l:1402,time:'18小时前'}
+    ]
+  },
+  {
+    id:'n14', cat:'八卦', city:'长沙', time:'4小时前',
+    title:'拐角奶茶店改名叫「从前的味道」，老板说是因为女朋友跑了',
+    body:'我去买的时候发现招牌换了，昨天还叫「茶小满」。\n\n我问老板怎么改名了。\n他说：我女朋友跑了。\n我说：所以叫从前？\n他说：是。她以前老说我做的像以前的味道。\n\n然后他给我做了一杯，放了双倍珍珠，说：这杯算甜的，别多想。\n\n我在门口喝完了才走。墙上贴着招聘，待遇写得挺高的。',
+    tags:['#城市故事','#奶茶店','#从前'],
+    covers:[{e:'🧋',g:['#ffe8d6','#ffc79a'],big:'从前的味道'},{e:'🪟',g:['#e6f0ff','#c3d9ff'],big:'墙上贴着招聘'}],
+    user:{n:'奶茶巡街员',a:'🧋',bio:'每换一家店我就进去问问'},
+    likes:16032, collects:2901, forwards:520,
+    comments:[
+      {u:'热心市民王女士',a:'👩',t:'这杯算甜的，别多想。老板会说话，就是留不住人。',l:4210,time:'3小时前'},
+      {u:'奶芙芙',a:'🧁',t:'双倍珍珠 是最便宜的温柔',l:2109,time:'3小时前'},
+      {u:'阿柴今天也很困',a:'🐶',t:'我明天就去这家店消费，给他加个好评',l:980,time:'2小时前'}
+    ]
+  },
+  {
+    id:'n15', cat:'穿搭', city:'上海', time:'9小时前',
+    title:'月薪五千，我把基础款穿出了工资八千的样子',
+    body:'结论先说：不是衣服的问题，是衣服的「状态」问题。\n\n① 三件白T，只留最挺的那件，另外两件当睡衣。\n② 裤子只买一个颜色，这样所有上衣都能配，早上不用思考。\n③ 鞋是唯一可以超预算的东西，别人先看鞋。\n④ 出门前照镜子看三秒：有没有多余的东西，摘掉。\n\n第五条也是最重要的一条：\n把手机壳换成素的。真的有用。',
+    tags:['#基础款','#通勤穿搭','#省钱'],
+    covers:[{e:'👕',g:['#eef0ff','#ccd3ff'],big:'三件白T  只留一件'},{e:'👟',g:['#f0f0f0','#dedede'],big:'鞋可以超预算'}],
+    user:{n:'衣柜只有三种颜色',a:'🧺',bio:'买衣服前会先数一遍衣柜'},
+    likes:13201, collects:6210, forwards:301,
+    comments:[
+      {u:'小满',a:'🌾',t:'把手机壳换成素的 这条是真有效，我试过',l:3310,time:'8小时前'},
+      {u:'我在人间凑数',a:'🧍',t:'裤子只买一个颜色这条 我买了五条一样的 现在被同事说我不换裤子',l:2210,time:'7小时前'}
+    ]
+  }
+];
+
+const CATS = ['推荐','八卦','情感','职场','抽象','生活','宠物','美食','穿搭','搞笑'];
+const FOLLOWS = [
+  {n:'不睡觉的鱼',a:'🐟'},{n:'早八受害人',a:'😵'},{n:'小满',a:'🌾'},{n:'已注销',a:'👻'},{n:'热心市民王女士',a:'👩'}
+];
+const TAGS_POOL = ['#生活记录','#抽象','#打工人','#情感树洞','#吃瓜','#宠物','#一人食','#社死现场','#职场吐槽','#今天的快乐'];
+
+/* =======================================================================
+   状态
+======================================================================= */
+let notes = JSON.parse(JSON.stringify(NOTES));
+let liked = new Set(), collected = new Set(), followed = new Set();
+let curTab = '推荐', keyword = '';
+let curNote = null, curImg = 0;
+let replyTo = null;
+let pickedCover = 0, pickedEmoji = '📦', pickedGrad = 0, pickedPhoto = '';
+let pendingShare = null;
+
+/* =======================================================================
+   工具
+======================================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function fmt(n){ return n >= 10000 ? (n/10000).toFixed(1).replace('.0','') + '万' : String(n); }
+
+/* =======================================================================
+   图标：小红书风格的线性 SVG（点赞/收藏/评论/转发）
+======================================================================= */
+const ICO_PATHS = {
+  /* 心形：未选中描边，选中实心红 */
+  heart: ['M12 20.6C7.35 16.65 3.4 13.5 3.4 9.65 3.4 6.86 5.6 4.7 8.32 4.7c1.6 0 3.05.72 3.68 1.85.63-1.13 2.08-1.85 3.68-1.85 2.72 0 4.92 2.16 4.92 4.95 0 3.85-3.95 7-8.6 10.95z'],
+  /* 五角星：收藏 */
+  star: ['M12 3.4l2.62 5.42 5.88.82-4.32 4.14 1.06 5.9L12 16.85l-5.24 2.83 1.06-5.9L3.5 9.64l5.88-.82z'],
+  /* 对话气泡：评论 */
+  chat: ['M20.5 11.7c0 3.95-3.8 7.15-8.5 7.15-.98 0-1.92-.14-2.78-.4L5.1 20.6l1.32-3.6C4.85 15.63 3.5 13.8 3.5 11.7c0-3.95 3.8-7.15 8.5-7.15s8.5 3.2 8.5 7.15z'],
+  /* 转发箭头：带弧线尾巴的右向箭头 */
+  fwd: ['M14.8 7l5.4 5-5.4 5', 'M4.2 19.4C4.2 13.6 7.7 12 14.8 12']
+};
+function ico(name, on){
+  const paths = ICO_PATHS[name].map(d => `<path d="${d}"/>`).join('');
+  return `<svg class="ico" viewBox="0 0 24 24" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor"`
+    + ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+}
+
+/* 分享面板图标（实心，白色描在彩色圆形上） */
+const SH_ICO = {
+  wechat: '<path d="M9.1 3.4c-3.5 0-6.3 2.35-6.3 5.25 0 1.63.9 3.1 2.35 4.03l-.6 2 2.3-1.2c.68.17 1.4.26 2.15.26.2 0 .4 0 .6-.03-.1-.4-.16-.82-.16-1.25 0-2.9 2.85-5.25 6.35-5.25.22 0 .43.01.64.03-.56-2.28-2.98-3.84-6.33-3.84z" fill="currentColor"/>'
+    + '<path d="M21.2 12.44c0-2.5-2.53-4.53-5.65-4.53s-5.65 2.03-5.65 4.53 2.53 4.53 5.65 4.53c.66 0 1.3-.1 1.9-.27l1.85 1-.5-1.7c1.5-.83 2.4-2.1 2.4-3.56z" fill="currentColor"/>',
+  moments: '<circle cx="12" cy="12" r="7.3" fill="none" stroke="currentColor" stroke-width="2"/>'
+    + '<circle cx="12" cy="12" r="2.9" fill="currentColor"/>',
+  qq: '<text x="12" y="17.2" text-anchor="middle" font-size="15" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="currentColor">Q</text>',
+  fwd: '<path d="M14.8 7l5.4 5-5.4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '<path d="M4.2 19.4C4.2 13.6 7.7 12 14.8 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  link: '<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="currentColor"/>',
+  image: '<rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/>'
+    + '<circle cx="8.9" cy="10" r="1.5" fill="currentColor"/>'
+    + '<path d="M4.9 18.1l4.9-4.9 3.1 3.1 3.3-3.3 4.1 4.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+  send: '<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>',
+  album: '<path d="M12 3.4l2.62 5.42 5.88.82-4.32 4.14 1.06 5.9L12 16.85l-5.24 2.83 1.06-5.9L3.5 9.64l5.88-.82z" fill="currentColor"/>',
+  report: '<path d="M12 3.8l8.6 14.9H3.4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>'
+    + '<path d="M12 9.8v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
+    + '<circle cx="12" cy="16.3" r="1.05" fill="currentColor"/>',
+  more: '<circle cx="5.6" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.4" cy="12" r="1.9" fill="currentColor"/>'
+};
+const SH_ITEMS = [
+  {k:'wechat',  t:'微信好友',   c:'#07c160', i:'wechat'},
+  {k:'moments', t:'朋友圈',     c:'#07c160', i:'moments'},
+  {k:'qq',      t:'QQ好友',     c:'#12b7f5', i:'qq'},
+  {k:'fwd',     t:'转发到主页', c:'#ff2442', i:'fwd'},
+  {k:'copy',    t:'复制链接',   c:'#a4a4a4', i:'link'},
+  {k:'image',   t:'生成图片',   c:'#ffa62b', i:'image'},
+  {k:'dm',      t:'私信好友',   c:'#ff6b81', i:'send'},
+  {k:'album',   t:'收藏到专辑', c:'#ffc02e', i:'album'},
+  {k:'report',  t:'举报',       c:'#c8c8c8', i:'report'},
+  {k:'more',    t:'更多',       c:'#c8c8c8', i:'more'}
+];
+function shIconHTML(name){
+  return `<svg class="sh-svg" viewBox="0 0 24 24" aria-hidden="true">${SH_ICO[name]}</svg>`;
+}
+function lum(hex){
+  const c = hex.replace('#','');
+  const r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+  return (0.299*r + 0.587*g + 0.114*b) / 255;
+}
+function txtColor(g){ return lum(g[0]) > .74 ? '#4a2b33' : '#ffffff'; }
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1900);
+}
+function shade(hex, amt){
+  const c = hex.replace('#','');
+  let r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+  r = Math.min(255,Math.max(0,r+amt)); g = Math.min(255,Math.max(0,g+amt)); b = Math.min(255,Math.max(0,b+amt));
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+/* 色块封面（用户自己发的帖子走这条，或者没配照片时兜底） */
+function gradientHTML(cv, cls){
+  const tc = txtColor(cv.g);
+  const light = lum(cv.g[0]) > .74;
+  const blob1 = light ? 'rgba(255,255,255,.75)' : 'rgba(255,255,255,.34)';
+  const blob2 = light ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.2)';
+  const emojiStyle = cv.big
+    ? 'inset:auto;top:26%;left:0;right:0;height:40%;'
+    : 'inset:0;';
+  return `
+    <div class="layer" style="background:linear-gradient(145deg,${cv.g[0]},${cv.g[1]})"></div>
+    <div class="layer" style="background:
+        radial-gradient(circle at 15% 12%, ${blob1} 0 22%, transparent 23%),
+        radial-gradient(circle at 88% 82%, ${blob2} 0 26%, transparent 27%),
+        radial-gradient(circle at 70% 10%, rgba(255,255,255,.28) 0 12%, transparent 13%);
+        mix-blend-mode:soft-light"></div>
+    <div class="layer" style="background:linear-gradient(180deg,transparent 42%,rgba(0,0,0,${light?'.06':'.16'}))"></div>
+    <div class="cv-emoji" style="${emojiStyle}font-size:${cls === 'big' ? '132px' : '60px'}">${cv.e}</div>
+    ${cv.big ? `<div class="cv-big" style="color:${tc};text-shadow:0 2px 12px rgba(0,0,0,${light?'.08':'.22'})">${esc(cv.big)}</div>` : ''}
+  `;
+}
+
+/* 封面：有实拍照片优先用照片，否则回落到色块 */
+function coverHTML(n, cv, cls){
+  if(n.photo) return `<img class="cv-img" src="${n.photo}" alt="" draggable="false">`;
+  return gradientHTML(cv, cls);
+}
+
+/* =======================================================================
+   顶栏 tabs
+======================================================================= */
+function renderTabs(){
+  $('#tabs').innerHTML = CATS.map(c =>
+    `<button class="tab${c === curTab ? ' on' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+}
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if(!b) return;
+  curTab = b.dataset.cat;
+  renderTabs(); renderFeed();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+function renderFollows(){
+  $('#sideFollows').innerHTML = FOLLOWS.map(f =>
+    `<div class="follow"><div class="av">${f.a}</div>${f.n}</div>`
+  ).join('');
+}
+
+/* =======================================================================
+   信息流
+======================================================================= */
+function filtered(){
+  return notes.filter(n => {
+    if(n.forwardOf && curTab !== '推荐'){ /* 转发帖只出现在推荐 */ }
+    if(curTab !== '推荐' && n.cat !== curTab) return false;
+    if(keyword){
+      const k = keyword.toLowerCase();
+      const hay = (n.title + n.body + n.user.n + (n.forwardOf ? '转发' : '')).toLowerCase();
+      if(!hay.includes(k)) return false;
+    }
+    return true;
+  });
+}
+
+function cardHTML(n){
+  const likeCount = n.likes + (liked.has(n.id) ? 1 : 0);
+  return `
+    <div class="cover">
+      ${coverHTML(n, n.covers[0], 'card')}
+      ${n.hot ? '<div class="cv-tag hot">🔥 热</div>' : (n.city ? `<div class="cv-loc"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c-3.6 0-6.5 2.9-6.5 6.5 0 4.9 6.5 12.5 6.5 12.5s6.5-7.6 6.5-12.5c0-3.6-2.9-6.5-6.5-6.5zm0 8.8a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6z"/></svg>${esc(n.city)}</div>` : '')}
+      ${n.covers.length > 1 ? `<div class="cv-tag" style="top:auto;bottom:12px;left:auto;right:12px">${n.covers.length}图</div>` : ''}
+      ${n.forwardOf ? `<div class="cv-fwd"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.8 7l5.4 5-5.4 5"/><path d="M4.2 19.4C4.2 13.6 7.7 12 14.8 12"/></svg> 转发自 @${esc(n.forwardOf.n)}</div>` : ''}
+    </div>
+    <div class="c-meta">
+      <div class="c-title">${esc(n.title)}</div>
+      <div class="c-sub">
+        <div class="c-user"><div class="av">${n.user.a}</div><span>${esc(n.user.n)}</span></div>
+        <div class="c-like${liked.has(n.id) ? ' on' : ''}">${ico('heart', liked.has(n.id))}${fmt(likeCount)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFeed(){
+  const list = filtered();
+  const feed = $('#feed');
+  if(!list.length){
+    feed.innerHTML = `<div style="position:absolute;left:0;right:0;padding:90px 0;text-align:center;color:#b0b0b0;font-size:14px">
+      这里还没有内容 · 换个词或者自己去发一条吧</div>`;
+    feed.style.height = '240px'; return;
+  }
+  feed.innerHTML = list.map(n =>
+    `<article class="card" data-id="${n.id}" data-ratio="${n.ratio || 1.333}">${cardHTML(n)}</article>`
+  ).join('');
+  requestAnimationFrame(layout);
+}
+
+let layoutTimer;
+function layout(){
+  const feed = $('#feed');
+  const cards = [...feed.querySelectorAll('.card')];
+  if(!cards.length) return;
+  const W = feed.clientWidth;
+  const gap = 18, minW = 216;
+  let cols = Math.max(2, Math.min(5, Math.floor((W + gap) / (minW + gap))));
+  if(W < 520) cols = 2;
+  const colW = (W - gap * (cols - 1)) / cols;
+  const hs = new Array(cols).fill(0);
+  cards.forEach(c => {
+    c.style.width = colW + 'px';
+    const cvEl = c.querySelector('.cover');
+    const r = parseFloat(c.dataset.ratio) || 1.333;
+    if(cvEl) cvEl.style.height = Math.round(colW * r) + 'px';
+    const h = c.offsetHeight;
+    let k = 0;
+    for(let i = 1; i < cols; i++) if(hs[i] < hs[k] - 0.6) k = i;
+    c.style.transform = `translate(${(k * (colW + gap)).toFixed(1)}px, ${hs[k].toFixed(1)}px)`;
+    hs[k] += h + gap;
+  });
+  feed.style.height = (Math.max(...hs) + 10) + 'px';
+}
+window.addEventListener('resize', () => {
+  clearTimeout(layoutTimer); layoutTimer = setTimeout(layout, 120);
+});
+
+/* 每篇笔记配一张实拍封面 + 高宽比，模仿小红书信息流的 3:4 / 1:1 / 4:3 混排 */
+const PHOTOS = {
+  n1:'covers/n1.jpg',   n2:'covers/n2.jpg',   n3:'covers/n3.jpg',   n4:'covers/n4.jpg',
+  n5:'covers/n5.jpg',   n6:'covers/n6.jpg',   n7:'covers/n7.jpg',   n8:'covers/n8.jpg',
+  n9:'covers/n9.jpg',   n10:'covers/n10.jpg', n11:'covers/n11.jpg', n12:'covers/n12.jpg',
+  n13:'covers/n13.jpg', n14:'covers/n14.jpg', n15:'covers/n15.jpg'
+};
+const RATIOS = {
+  n1:1.333, n2:1.333, n3:1.0,   n4:1.333, n5:0.75,  n6:1.0,   n7:1.333, n8:1.333,
+  n9:1.333, n10:1.0, n11:1.0,  n12:1.333, n13:1.333, n14:1.333, n15:1.0
+};
+notes.forEach(n => { n.photo = PHOTOS[n.id] || ''; n.ratio = RATIOS[n.id] || 1.333; });
+
+/* =======================================================================
+   点开卡片
+======================================================================= */
+$('#feed').addEventListener('click', e => {
+  const card = e.target.closest('.card'); if(!card) return;
+  openDetail(card.dataset.id);
+});
+
+/* =======================================================================
+   详情
+======================================================================= */
+function openDetail(id){
+  curNote = notes.find(n => n.id === id); if(!curNote) return;
+  curImg = 0; replyTo = null;
+  $('#cmtInput').value = ''; $('#cmtSend').classList.remove('show');
+  renderDetail();
+  $('#detailMask').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeDetail(){
+  $('#detailMask').classList.remove('show');
+  document.body.style.overflow = '';
+  renderFeed();
+}
+
+function renderDetail(){
+  const n = curNote;
+  $('#dAv').textContent = n.user.a;
+  $('#dName').innerHTML = `${esc(n.user.n)}`;
+  $('#dBio').textContent = n.user.bio + ' · ' + (n.time || '刚刚');
+  const wish = followed.has(n.user.n);
+  const f = $('#dFollow');
+  f.textContent = wish ? '已关注' : '关注';
+  f.classList.toggle('on', wish);
+
+  /* 图片区 */
+  $('#dImg').innerHTML = coverHTML(n, n.covers[curImg], 'big');
+  $('#dDots').innerHTML = n.covers.length > 1
+    ? n.covers.map((_,i) => `<i class="${i === curImg ? 'on' : ''}"></i>`).join('') : '';
+  $('#dPrev').style.display = n.covers.length > 1 ? 'grid' : 'none';
+  $('#dNext').style.display = n.covers.length > 1 ? 'grid' : 'none';
+
+  /* 正文 */
+  const tagHTML = n.tags.map(t => `<b>${esc(t)}</b>`).join('');
+  const cms = n.comments;
+  $('#dBody').innerHTML = `
+    ${n.forwardOf ? `<div class="d-fwd-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.8 7l5.4 5-5.4 5"/><path d="M4.2 19.4C4.2 13.6 7.7 12 14.8 12"/></svg> 转发自 @${esc(n.forwardOf.n)}</div>` : ''}
+    <h1 class="d-title">${esc(n.title)}</h1>
+    <div class="d-text">${esc(n.body)}</div>
+    <div class="d-tags">${tagHTML}</div>
+    <div class="d-info">
+      <span>${esc(n.time || '刚刚')}</span>
+      ${n.city ? `<span>📍${esc(n.city)}</span>` : ''}
+      <span style="cursor:pointer" id="dReport">⋯ 举报</span>
+    </div>
+    <div class="d-cmt-cap">共 ${cms.length} 条评论<span style="color:#ddd">·</span> <span style="color:#c4c4c4">小红书不欢迎吵架</span></div>
+    <div id="dCmtList">
+      ${cms.map((c,i) => `
+        <div class="cmt">
+          <div class="av">${c.a}</div>
+          <div class="cmt-main">
+            <div class="cmt-name">${esc(c.u)}</div>
+            <div class="cmt-text">${esc(c.t)}</div>
+            <div class="cmt-foot">
+              <span>${esc(c.time || '刚刚')}</span>
+              <button class="act" data-reply="${esc(c.u)}">回复</button>
+              <button class="act cmt-like${c.liked ? ' on' : ''}" data-ci="${i}">${ico('heart', !!c.liked)}${fmt(c.l || 0)}</button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  /* 底部操作条：图标在左、数字在右，对齐小红书 */
+  const liked_ = liked.has(n.id), coll_ = collected.has(n.id);
+  $('#xhsActs').innerHTML = `
+    <button class="xhs-act${liked_ ? ' on' : ''}" data-act="like" title="点赞">
+      ${ico('heart', liked_)}<span class="num">${fmt(n.likes + (liked_ ? 1 : 0))}</span>
+    </button>
+    <button class="xhs-act${coll_ ? ' on' : ''}" data-act="collect" title="收藏">
+      ${ico('star', coll_)}<span class="num">${fmt(n.collects + (coll_ ? 1 : 0))}</span>
+    </button>
+    <button class="xhs-act" data-act="cmt" title="评论">
+      ${ico('chat', false)}<span class="num">${n.comments.length}</span>
+    </button>
+    <button class="xhs-act" data-act="share" title="转发">
+      ${ico('fwd', false)}<span class="num">${fmt(n.forwards || 0)}</span>
+    </button>
+  `;
+}
+
+/* 点赞/收藏/评论/分享 */
+$('#xhsActs').addEventListener('click', e => {
+  const b = e.target.closest('.xhs-act'); if(!b) return;
+  const a = b.dataset.act;
+  if(a === 'like'){
+    liked.has(curNote.id) ? liked.delete(curNote.id) : liked.add(curNote.id);
+    if(liked.has(curNote.id)) burstHeart();
+    toast(liked.has(curNote.id) ? '已点赞' : '取消点赞');
+  }
+  if(a === 'collect'){
+    collected.has(curNote.id) ? collected.delete(curNote.id) : collected.add(curNote.id);
+    toast(collected.has(curNote.id) ? '已收藏，等你哪天想起来再看一遍' : '取消收藏');
+  }
+  if(a === 'cmt'){ $('#cmtInput').focus(); return; }
+  if(a === 'share'){ openShare(curNote); return; }
+  renderDetail();
+});
+
+function heartPopHTML(size){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#ff2442" stroke="#ff2442" stroke-width="1.4" stroke-linejoin="round"><path d="M12 20.6C7.35 16.65 3.4 13.5 3.4 9.65 3.4 6.86 5.6 4.7 8.32 4.7c1.6 0 3.05.72 3.68 1.85.63-1.13 2.08-1.85 3.68-1.85 2.72 0 4.92 2.16 4.92 4.95 0 3.85-3.95 7-8.6 10.95z"/></svg>`;
+}
+function burstHeart(){
+  const s = $('#dImg');
+  const el = document.createElement('div');
+  el.className = 'heart-pop'; el.innerHTML = heartPopHTML(84);
+  el.style.left = '50%'; el.style.top = '50%';
+  s.appendChild(el); setTimeout(() => el.remove(), 820);
+}
+$('#dImg').addEventListener('dblclick', e => {
+  if(!liked.has(curNote.id)){ liked.add(curNote.id); renderDetail(); }
+  const r = $('#dImg').getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'heart-pop'; el.innerHTML = heartPopHTML(84);
+  el.style.left = (e.clientX - r.left) + 'px'; el.style.top = (e.clientY - r.top) + 'px';
+  $('#dImg').appendChild(el); setTimeout(() => el.remove(), 820);
+  toast('双击点赞成功');
+});
+
+/* 评论点赞 / 回复 */
+$('#dBody').addEventListener('click', e => {
+  const rp = e.target.closest('[data-reply]');
+  if(rp){ replyTo = rp.dataset.reply; const i = $('#cmtInput'); i.value = '@' + replyTo + ' '; i.focus(); return; }
+  const cl = e.target.closest('.cmt-like');
+  if(cl){
+    const i = +cl.dataset.ci, c = curNote.comments[i];
+    c.liked = !c.liked;
+    c.l = (c.l || 0) + (c.liked ? 1 : -1);
+    cl.classList.toggle('on', c.liked);
+    cl.innerHTML = ico('heart', c.liked) + fmt(c.l);
+    return;
+  }
+  if(e.target.id === 'dReport') toast('已收到反馈（这个按钮是装饰的）');
+});
+
+/* 图片翻页 */
+$('#dPrev').onclick = () => { curImg = (curImg - 1 + curNote.covers.length) % curNote.covers.length; renderDetail(); };
+$('#dNext').onclick = () => { curImg = (curImg + 1) % curNote.covers.length; renderDetail(); };
+$('#dFollow').onclick = () => {
+  const un = curNote.user.n;
+  if(followed.has(un)){ followed.delete(un); toast('已取消关注'); }
+  else { followed.add(un); toast('关注成功，TA 的更新会出现在「关注」里'); }
+  renderDetail();
+};
+
+/* 发评论 */
+const ci = $('#cmtInput');
+ci.addEventListener('input', () => { $('#cmtSend').classList.toggle('show', !!ci.value.trim()); });
+ci.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#cmtSend').click(); } });
+$('#cmtSend').onclick = () => {
+  const v = ci.value.trim(); if(!v || !curNote) return;
+  curNote.comments.unshift({u:ME.name, a:ME.av, t:v, l:0, time:'刚刚'});
+  ci.value = ''; $('#cmtSend').classList.remove('show'); replyTo = null;
+  renderDetail();
+  $('#dBody').scrollTop = 0;
+  toast('评论已发布');
+};
+
+/* =======================================================================
+   分享 / 转发
+======================================================================= */
+function renderShareGrid(){
+  $('#shGrid').innerHTML = SH_ITEMS.map(it => `
+    <button class="sh-item" data-sh="${it.k}">
+      <span class="sh-ico" style="background:${it.c}">${shIconHTML(it.i)}</span>${it.t}
+    </button>`).join('');
+}
+
+function openShare(n){
+  pendingShare = n;
+  const cv = n.covers[0];
+  const thumb = n.photo
+    ? `<img src="${n.photo}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : cv.e;
+  const thumbBg = n.photo ? '#eee' : `linear-gradient(145deg,${cv.g[0]},${cv.g[1]})`;
+  $('#shPreview').innerHTML = `
+    <div class="sh-thumb" style="background:${thumbBg}">${thumb}</div>
+    <div style="min-width:0">
+      <div class="sh-ptitle">${esc(n.title)}</div>
+      <div class="sh-puser">@${esc(n.user.n)} · ${esc(n.time || '刚刚')}</div>
+    </div>`;
+  $('#shFwdBox').classList.remove('show');
+  $('#shFwdText').value = '';
+  $('#shMask').classList.add('show');
+  setTimeout(() => $('#shSheet').classList.add('show'), 10);
+}
+function closeShare(){
+  $('#shSheet').classList.remove('show');
+  $('#shMask').classList.remove('show');
+}
+$('#shCancel').onclick = closeShare;
+$('#shMask').addEventListener('click', e => { if(e.target.id === 'shMask') closeShare(); });
+
+$('#shGrid').addEventListener('click', e => {
+  const b = e.target.closest('.sh-item'); if(!b) return;
+  const k = b.dataset.sh;
+  if(k === 'fwd'){ $('#shFwdBox').classList.add('show'); setTimeout(() => $('#shFwdText').focus(), 80); return; }
+  if(k === 'copy'){
+    const url = location.href.split('#')[0] + '#note-' + (pendingShare ? pendingShare.id : '');
+    if(navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    toast('链接已复制'); return closeShare();
+  }
+  if(k === 'wechat' || k === 'moments' || k === 'qq' || k === 'dm'){
+    toast(b.textContent.trim() + ' · 演示环境里唤不起来'); return closeShare();
+  }
+  if(k === 'image'){ toast('分享图已生成（画的，不给你看）'); return closeShare(); }
+  if(k === 'album'){
+    if(pendingShare) collected.add(pendingShare.id);
+    toast('已收藏到「默认专辑」'); return closeShare();
+  }
+  if(k === 'report'){ toast('已提交举报（这个按钮是装饰的）'); return closeShare(); }
+  toast('更多分享方式'); closeShare();
+});
+
+$('#shFwdGo').onclick = () => {
+  const n = pendingShare; if(!n) return;
+  const txt = $('#shFwdText').value.trim();
+  n.forwards = (n.forwards || 0) + 1;
+  const fw = {
+    id: nid(), cat: n.cat, city: ME.name, time: '刚刚', hot: false,
+    photo: n.photo, ratio: n.ratio,
+    forwardOf: { n: n.user.n, a: n.user.a },
+    title: txt || ('转发 @' + n.user.n + '：' + n.title),
+    body: (txt ? txt + '\n\n' : '') + '—— 转自 @' + n.user.n + '：' + n.title,
+    tags: n.tags.slice(0,2).concat(['#转发']),
+    covers: n.covers.slice(0, n.covers.length > 1 ? 2 : 1),
+    user: { n: ME.name, a: ME.av, bio: '刚刚开始用小红书' },
+    likes: 0, collects: 0, forwards: 0,
+    comments: [],
+    mine: true
+  };
+  notes.unshift(fw);
+  closeShare(); closeDetail();
+  curTab = '推荐'; keyword = ''; $('#searchInput').value = '';
+  renderTabs(); renderFeed();
+  window.scrollTo({top:0, behavior:'smooth'});
+  setTimeout(() => toast('已转发到你的主页'), 260);
+};
+
+/* =======================================================================
+   发布
+======================================================================= */
+function buildPubPickers(){
+  const up = `<button class="p-cv p-upload${pickedPhoto ? ' has' : ''}" id="pUploadTile" title="从本地选一张图"
+      style="${pickedPhoto ? `background-image:url("${pickedPhoto}")` : ''}">＋</button>`;
+  $('#pCovers').innerHTML = up + Array.from({length:6}, (_,i) => {
+    const g = GRAD_POOL[i % GRAD_POOL.length];
+    const on = !pickedPhoto && i === pickedCover;
+    return `<button class="p-cv${on ? ' on' : ''}" data-cv="${i}"
+      style="background:linear-gradient(145deg,${g[0]},${g[1]})">${on ? pickedEmoji : ''}</button>`;
+  }).join('');
+  $('#pEmo').innerHTML = EMO_POOL.map(e =>
+    `<button class="p-emo${e === pickedEmoji ? ' on' : ''}" data-emo="${e}">${e}</button>`
+  ).join('');
+  $('#pTags').innerHTML = TAGS_POOL.map(t =>
+    `<button class="p-tag" data-tag="${t}">${t}</button>`
+  ).join('');
+}
+$('#pCovers').addEventListener('click', e => {
+  if(e.target.closest('#pUploadTile')){ $('#pFile').click(); return; }
+  const b = e.target.closest('.p-cv'); if(!b) return;
+  pickedCover = +b.dataset.cv;
+  pickedPhoto = '';
+  buildPubPickers();
+});
+$('#pFile').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { pickedPhoto = rd.result; buildPubPickers(); toast('封面选好了'); };
+  rd.readAsDataURL(f);
+});
+$('#pEmo').addEventListener('click', e => {
+  const b = e.target.closest('.p-emo'); if(!b) return;
+  pickedEmoji = b.dataset.emo; pickedPhoto = ''; buildPubPickers();
+});
+let pubTags = [];
+$('#pTags').addEventListener('click', e => {
+  const b = e.target.closest('.p-tag'); if(!b) return;
+  const t = b.dataset.tag;
+  if(pubTags.includes(t)) pubTags = pubTags.filter(x => x !== t);
+  else if(pubTags.length < 4) pubTags.push(t);
+  else return toast('话题最多选 4 个');
+  [...$('#pTags').children].forEach(c => {
+    const on = pubTags.includes(c.dataset.tag);
+    c.style.background = on ? '#e3ecff' : '#f0f4ff';
+    c.style.boxShadow = on ? '0 0 0 1.5px #1e4bd8 inset' : 'none';
+  });
+});
+
+const RANDOM_SEEDS = [
+  {e:'📦', big:'我的快递被邻居签收了', t:'我的快递被邻居签收了，他说以为是他的', b:'我在门口站了十分钟。\n他说：我看地址是这栋楼啊。\n我说：这栋楼有28层。\n他说：那不巧了。\n\n快递拆了，是一套碗。他说碗挺好。我说那送你了。他真的收了。'},
+  {e:'🪑', big:'我把椅子拖到阳台坐了一下午', t:'我把椅子拖到阳台，坐了一下午，什么也没干', b:'没刷手机，没听歌，就是坐着。\n楼下有人在遛狗，狗停下来看了我一眼，然后走了。\n\n晚上我觉得我好像休息了。已经很久没有这种感觉了。'},
+  {e:'🍰', big:'生日蛋糕我一个人吃了三天', t:'生日蛋糕我一个人吃了三天', b:'第一天很甜。\n第二天还行。\n第三天我把最后一块放到盘子里，看了很久，然后吃了。\n\n其实这样也不错，至少没人跟我抢樱桃。'},
+  {e:'🧊', big:'冰箱里有一瓶过期两年的酱', t:'我家冰箱有一瓶过期两年的酱，我没舍得扔', b:'是搬家时朋友送的，一直没用过。\n每次清理冰箱我拿起来看一眼，然后又放回去。\n\n我知道它不能吃了。但我就是不想扔。'}
+];
+$('#pubRandom').onclick = () => {
+  const s = RANDOM_SEEDS[Math.floor(Math.random()*RANDOM_SEEDS.length)];
+  pickedEmoji = s.e; pickedCover = Math.floor(Math.random()*6); pickedPhoto = '';
+  $('#pubBig').value = s.big; $('#pubTitle').value = s.t; $('#pubText').value = s.b;
+  $('#pubCount').textContent = s.b.length + ' 字';
+  buildPubPickers();
+  toast('帮你填好了，改改再发');
+};
+$('#pubText').addEventListener('input', e => { $('#pubCount').textContent = e.target.value.length + ' 字'; });
+
+function openPub(){
+  pickedCover = Math.floor(Math.random()*6);
+  pickedEmoji = EMO_POOL[Math.floor(Math.random()*EMO_POOL.length)];
+  pickedPhoto = '';
+  pubTags = []; $('#pubBig').value = ''; $('#pubTitle').value = ''; $('#pubText').value = '';
+  $('#pubCount').textContent = '0 字';
+  buildPubPickers();
+  $('#pubMask').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closePub(){ $('#pubMask').classList.remove('show'); document.body.style.overflow = ''; }
+$('#navPub').onclick = openPub;
+$('#mobPub').onclick = openPub;
+$('#pubClose').onclick = closePub;
+$('#pubMask').addEventListener('click', e => { if(e.target.id === 'pubMask') closePub(); });
+
+$('#pubSubmit').onclick = () => {
+  const title = $('#pubTitle').value.trim();
+  const body = $('#pubText').value.trim();
+  if(!title && !body) return toast('标题和正文总得有一个');
+  const g = GRAD_POOL[pickedCover % GRAD_POOL.length];
+  const big = $('#pubBig').value.trim();
+  const nt = {
+    id: nid(), cat: (pubTags[0] || '#生活记录').replace('#','').slice(0,3) || '生活',
+    city:'我这边', time:'刚刚', hot:false,
+    photo: pickedPhoto, ratio: 1.333,
+    title: title || big || '（无标题）',
+    body: body || '（正文空着，也是一种态度）',
+    tags: pubTags.length ? pubTags : ['#生活记录'],
+    covers: [{ e:pickedEmoji, g:[g[0],g[1]], big: big || '' }],
+    user:{ n:ME.name, a:ME.av, bio:'刚刚开始用小红书' },
+    likes:0, collects:0, forwards:0, comments:[], mine:true
+  };
+  notes.unshift(nt);
+  closePub();
+  curTab = '推荐'; keyword = ''; $('#searchInput').value = '';
+  renderTabs(); renderFeed();
+  window.scrollTo({top:0, behavior:'smooth'});
+  setTimeout(() => toast('发布成功，正在给你的笔记配流量（没有）'), 240);
+};
+
+/* =======================================================================
+   通知
+======================================================================= */
+const NOTIS = [
+  {a:'🧁', n:'奶芙芙', t:'赞了你的笔记 <b>「我把前男友送的绿萝养死了」</b>', time:'2分钟前'},
+  {a:'👻', n:'已注销', t:'评论了你：<b>姐妹你说得对，但我想补充一句</b>', time:'18分钟前'},
+  {a:'🌾', n:'小满', t:'收藏了你的笔记 <b>「楼道里的共享单车」</b>', time:'1小时前'},
+  {a:'🐟', n:'不睡觉的鱼', t:'关注了你', time:'3小时前'},
+  {a:'🍉', n:'吃瓜不吐皮', t:'转发了你的笔记 <b>「小区电梯广告」</b>', time:'昨天'},
+  {a:'🐶', n:'阿柴今天也很困', t:'回复了你的评论：<b>哈哈哈哈笑到了</b>', time:'昨天'}
+];
+$('#notiBody').innerHTML = NOTIS.map(x => `
+  <div class="n-item">
+    <div class="av">${x.a}</div>
+    <div>
+      <div class="n-main"><b>${esc(x.n)}</b> ${x.t}</div>
+      <div class="n-time">${x.time}</div>
+    </div>
+  </div>`).join('');
+function openNoti(){ $('#notiMask').classList.add('show'); $('#bellDot').style.display = 'none'; }
+$('#bellBtn').onclick = openNoti;
+$('#navNoti').onclick = openNoti;
+$('#mobNoti').onclick = openNoti;
+$('#notiClose').onclick = () => $('#notiMask').classList.remove('show');
+$('#notiMask').addEventListener('click', e => { if(e.target.id === 'notiMask') $('#notiMask').classList.remove('show'); });
+
+$('#navMe').onclick = () => toast('这是你自己的主页（还没做）');
+$('#meBtn').onclick = () => toast('那是你：1 篇笔记 · 0 个粉丝');
+
+/* 搜索 */
+let sTimer;
+$('#searchInput').addEventListener('input', e => {
+  clearTimeout(sTimer);
+  sTimer = setTimeout(() => { keyword = e.target.value.trim(); renderFeed(); }, 220);
+});
+
+/* 关闭详情 */
+$('#dClose').onclick = closeDetail;
+$('#detailMask').addEventListener('click', e => { if(e.target.id === 'detailMask') closeDetail(); });
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if($('#shSheet').classList.contains('show')) return closeShare();
+  if($('#pubMask').classList.contains('show')) return closePub();
+  if($('#notiMask').classList.contains('show')) return $('#notiMask').classList.remove('show');
+  if($('#detailMask').classList.contains('show')) return closeDetail();
+});
+
+/* =======================================================================
+   启动
+======================================================================= */
+renderTabs();
+renderFollows();
+renderShareGrid();
+renderFeed();
+setTimeout(layout, 120);
+setTimeout(() => toast('欢迎来到小红书 · 随手翻翻'), 700);
+</script>
+</body>
+</html>
