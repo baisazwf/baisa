@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>海角社区 - 海内存知己，天涯若比邻</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 12px/1.75 Tahoma, "宋体", SimSun, Arial, sans-serif;
+    color: #2b2b2b;
+    background: #eef1f5;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: #1449b0; text-decoration: none; }
+  a:hover { color: #d10000; text-decoration: underline; }
+  img { border: 0; }
+  input, textarea, select, button { font-family: inherit; font-size: 12px; }
+
+  /* ---------- 顶部通栏 ---------- */
+  .topbar {
+    background: #2a4a86;
+    border-bottom: 1px solid #16305d;
+    color: #d7e4f7;
+    font-size: 12px;
+    height: 26px;
+    line-height: 26px;
+  }
+  .wrap { width: 1000px; max-width: 100%; margin: 0 auto; padding: 0 8px; }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; }
+  .topbar a { color: #d7e4f7; }
+  .topbar a:hover { color: #ffdf7e; text-decoration: none; }
+  .topbar .sep { color: #5d7cb0; margin: 0 6px; }
+  .nick-line b { color: #ffdf7e; }
+
+  /* ---------- 头部 ---------- */
+  .header { background: #fff; border-bottom: 3px solid #e8a33d; }
+  .header .wrap { display: flex; align-items: center; padding: 12px 8px; }
+  .logo { font: bold 30px/1 "黑体", SimHei, "微软雅黑", sans-serif; color: #1449b0; letter-spacing: 3px; }
+  .logo em { font-style: normal; color: #d10000; }
+  .slogan { margin-left: 14px; padding-left: 14px; border-left: 1px solid #ddd; color: #8a8a8a; font-size: 12px; line-height: 1.5; }
+  .slogan .big { font-size: 14px; color: #c0392b; font-family: "楷体", KaiTi, "宋体"; letter-spacing: 1px; }
+  .search { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .search input[type=text] {
+    width: 180px; height: 22px; padding: 0 5px;
+    border: 1px solid #a9bfd9; background: #fdfefe;
+  }
+  .search button {
+    height: 22px; padding: 0 10px; cursor: pointer;
+    border: 1px solid #7c9ec4; background: linear-gradient(#f7fbff, #dfeaf7); color: #1449b0;
+  }
+
+  /* ---------- 导航 ---------- */
+  .nav { background: linear-gradient(#5b86c4, #3b64a4); border-bottom: 1px solid #2a4a86; }
+  .nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+  .nav li { }
+  .nav a {
+    display: block; padding: 0 16px; height: 30px; line-height: 30px;
+    color: #fff; font-size: 13px;
+  }
+  .nav a:hover, .nav a.on { background: #2a4a86; color: #ffdf7e; text-decoration: none; }
+
+  /* ---------- 公告 ---------- */
+  .notice {
+    border: 1px solid #e6d9a8; background: #ffffe0; margin: 10px 0;
+    padding: 5px 8px; display: flex; align-items: center; overflow: hidden;
+  }
+  .notice .tag {
+    flex: none; background: #d10000; color: #fff; padding: 1px 6px;
+    margin-right: 8px; font-size: 11px;
+  }
+  .notice .roll { flex: 1; overflow: hidden; white-space: nowrap; }
+  .notice .roll span { display: inline-block; padding-left: 100%; animation: roll 26s linear infinite; }
+  @keyframes roll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+  /* ---------- 布局 ---------- */
+  .layout { display: flex; gap: 10px; align-items: flex-start; padding-bottom: 16px; }
+  .sidebar { width: 196px; flex: none; }
+  .content { flex: 1; min-width: 0; }
+
+  .box { border: 1px solid #c9d8ea; background: #fff; margin-bottom: 10px; }
+  .box-hd {
+    background: linear-gradient(#f4f9ff, #e2edf9);
+    border-bottom: 1px solid #c9d8ea;
+    padding: 5px 8px; font-weight: bold; color: #1449b0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .box-hd .more { font-weight: normal; font-size: 11px; }
+  .box-bd { padding: 6px 8px; }
+
+  /* 版块列表 */
+  .boardlist { list-style: none; margin: 0; padding: 4px; }
+  .boardlist li { border-bottom: 1px dotted #dfe6ee; }
+  .boardlist li:last-child { border-bottom: 0; }
+  .boardlist a {
+    display: block; padding: 4px 6px; color: #2b2b2b;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .boardlist a:hover { background: #f2f7fd; color: #d10000; text-decoration: none; }
+  .boardlist a.on { background: #e2edf9; color: #1449b0; font-weight: bold; }
+  .boardlist .cnt { color: #a0a0a0; font-size: 11px; }
+  .boardlist .bname { white-space: nowrap; }
+
+  /* 统计 */
+  .stat { list-style: none; margin: 0; padding: 2px 4px; color: #555; }
+  .stat li { padding: 3px 4px; border-bottom: 1px dotted #eef1f5; display: flex; justify-content: space-between; }
+  .stat li:last-child { border-bottom: 0; }
+  .stat b { color: #d10000; font-weight: normal; }
+
+  /* ---------- 帖子列表 ---------- */
+  table.tlist { width: 100%; border-collapse: collapse; }
+  table.tlist th {
+    background: linear-gradient(#f4f9ff, #e2edf9);
+    border-bottom: 1px solid #c9d8ea;
+    color: #1449b0; font-weight: normal; text-align: left;
+    padding: 5px 8px; font-size: 12px; white-space: nowrap;
+  }
+  table.tlist td { padding: 7px 8px; border-bottom: 1px solid #eaf0f7; vertical-align: middle; }
+  table.tlist tr:nth-child(even) td { background: #fafcff; }
+  table.tlist tr:hover td { background: #fffbe6; }
+  .col-icon { width: 34px; text-align: center; }
+  .col-num { width: 74px; text-align: center; color: #777; }
+  .col-author { width: 106px; text-align: center; }
+  .col-act { width: 118px; color: #777; }
+  .t-title { font-size: 13px; }
+  .t-title .hot { color: #d10000; }
+  .t-title a { color: #1449b0; }
+  .t-title a:hover { color: #d10000; }
+  .tagbadge {
+    display: inline-block; font-size: 10px; line-height: 14px; padding: 0 4px;
+    margin-right: 4px; vertical-align: 1px; border-radius: 2px;
+  }
+  .tag-top { background: #d10000; color: #fff; }
+  .tag-good { background: #e8a33d; color: #fff; }
+  .tag-hot { background: #f0e0e0; color: #d10000; border: 1px solid #e4bcbc; }
+  .avatar-mini {
+    display: inline-block; width: 16px; height: 16px; line-height: 16px; text-align: center;
+    color: #fff; font-size: 10px; vertical-align: -3px; margin-right: 4px; border-radius: 2px;
+  }
+  .empty-tip { padding: 30px; text-align: center; color: #999; }
+
+  /* 分页 */
+  .pager { padding: 8px; text-align: right; border-top: 1px solid #eaf0f7; color: #666; }
+  .pager a, .pager span {
+    display: inline-block; padding: 1px 7px; margin-left: 3px;
+    border: 1px solid #c9d8ea; background: #fff;
+  }
+  .pager span.cur { background: #1449b0; border-color: #1449b0; color: #fff; font-weight: bold; }
+  .pager .info { border: 0; background: none; color: #888; }
+
+  /* ---------- 帖子详情 ---------- */
+  .crumb { padding: 8px 2px 0; color: #666; }
+  .crumb a { color: #1449b0; }
+  .toolbar {
+    border: 1px solid #c9d8ea; background: #fff; margin-bottom: 10px;
+    padding: 6px 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .toolbar .ttl { font-size: 14px; font-weight: bold; color: #1449b0; flex: 1; min-width: 200px; }
+  .toolbar .ttl .tagbadge { vertical-align: 2px; }
+  .btn {
+    border: 1px solid #7c9ec4; background: linear-gradient(#f7fbff, #dfeaf7);
+    color: #1449b0; padding: 2px 9px; cursor: pointer; border-radius: 2px;
+  }
+  .btn:hover { background: linear-gradient(#fff, #cfe0f4); }
+  .btn:active { background: #cfe0f4; }
+  .btn-primary {
+    border-color: #b5791f; background: linear-gradient(#f6c46a, #e8a33d); color: #5b3a05; font-weight: bold;
+  }
+  .btn-primary:hover { background: linear-gradient(#ffd583, #e8a33d); }
+  .btn-sm { padding: 0 6px; font-size: 11px; }
+
+  /* 楼层 */
+  .floor { border: 1px solid #c9d8ea; background: #fff; }
+  .floor-hd {
+    background: linear-gradient(#f4f9ff, #e6f0fb);
+    border-bottom: 1px solid #d8e4f2;
+    padding: 4px 8px; display: flex; align-items: center; gap: 8px; color: #666;
+  }
+  .floor-hd .fno { color: #d10000; font-weight: bold; }
+  .floor-hd .fsofa {
+    background: #e8a33d; color: #fff; font-size: 10px; padding: 0 4px; border-radius: 2px;
+  }
+  .floor-hd .right { margin-left: auto; color: #888; }
+  .floor-body { display: flex; align-items: stretch; }
+  .user-col {
+    width: 152px; flex: none; padding: 10px 8px; text-align: center;
+    background: #f7fafd; border-right: 1px solid #e6eef8;
+  }
+  .avatar {
+    width: 72px; height: 72px; margin: 0 auto 6px; line-height: 72px;
+    font-size: 30px; color: #fff; border: 1px solid #fff;
+    box-shadow: 0 0 0 1px #c9d8ea; border-radius: 3px; overflow: hidden;
+  }
+  .uname { font-weight: bold; color: #1449b0; word-break: break-all; }
+  .uname .lz { color: #d10000; font-weight: normal; font-size: 11px; }
+  .ulevel {
+    display: inline-block; margin-top: 3px; font-size: 11px;
+    background: #eef4fc; border: 1px solid #d3e2f4; color: #4c7ab5; padding: 0 5px; border-radius: 2px;
+  }
+  .uinfo { margin-top: 6px; color: #8a8a8a; font-size: 11px; line-height: 1.7; text-align: left; }
+  .uinfo .k { color: #a8a8a8; }
+  .main-col { flex: 1; min-width: 0; padding: 12px 14px 14px; }
+  .post-content { font-size: 14px; line-height: 1.9; color: #222; white-space: pre-wrap; word-wrap: break-word; }
+  .post-content .quote {
+    background: #f7f7f7; border-left: 3px solid #c9d8ea; color: #666;
+    padding: 4px 8px; margin: 6px 0; font-size: 12px;
+  }
+  .sig {
+    margin-top: 14px; padding-top: 6px; border-top: 1px dashed #e0e6ee;
+    color: #9a9a9a; font-size: 11px;
+  }
+  .floor-ft { padding: 4px 8px; border-top: 1px solid #eef2f8; text-align: right; background: #fdfefe; }
+  .floor-ft a { color: #7a8aa0; margin-left: 10px; font-size: 11px; }
+
+  /* 回帖之间空一行 */
+  .reply-gap { height: 18px; }
+
+  /* ---------- 发帖 / 回复框 ---------- */
+  .editor { border: 1px solid #c9d8ea; background: #fff; margin-top: 10px; }
+  .editor .box-hd { }
+  .editor .box-bd { padding: 10px; }
+  .field { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .field > label { width: 62px; flex: none; text-align: right; color: #666; padding-top: 3px; }
+  .field .ctl { flex: 1; }
+  .ipt { width: 100%; height: 24px; padding: 0 6px; border: 1px solid #a9bfd9; background: #fdfefe; }
+  .ipt:focus, .txa:focus { outline: none; border-color: #6f9bd1; background: #fff; }
+  .txa { width: 100%; min-height: 110px; padding: 6px; border: 1px solid #a9bfd9; background: #fdfefe; resize: vertical; line-height: 1.8; }
+  .smilebar { margin: 6px 0; color: #888; }
+  .smilebar a { margin-right: 8px; color: #1449b0; }
+  .editor-ft { display: flex; align-items: center; gap: 10px; }
+  .editor-ft .hint { color: #999; }
+  .field select.ipt { width: auto; min-width: 160px; }
+
+  /* ---------- 底部 ---------- */
+  .footer {
+    border-top: 3px solid #e8a33d; background: #fff; color: #777;
+    padding: 12px 0 20px; text-align: center; line-height: 2;
+  }
+  .footer .links a { margin: 0 6px; }
+  .footer .copy { color: #999; }
+  .marquee-line { color: #aaa; }
+
+  @media (max-width: 700px) {
+    .wrap { width: 100%; }
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .header .wrap { flex-wrap: wrap; }
+    .search { margin-left: 0; margin-top: 8px; width: 100%; }
+    .search input[type=text] { flex: 1; width: auto; }
+    .col-author, .col-act { display: none; }
+    .floor-body { flex-direction: column; }
+    .user-col { width: 100%; border-right: 0; border-bottom: 1px solid #e6eef8; display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px; }
+    .avatar { width: 40px; height: 40px; line-height: 40px; font-size: 18px; margin: 0; }
+    .uinfo { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部通栏 -->
+<div class="topbar">
+  <div class="wrap">
+    <div>
+      <a href="javascript:;" onclick="goHome()">海角社区</a>
+      <span class="sep">|</span>
+      <a href="javascript:;" onclick="alert('论坛的站短功能还在开发中……')">站内短信</a>
+      <span class="sep">|</span>
+      <a href="javascript:;" onclick="alert('收藏夹空空如也，先去顶几个好帖吧。')">我的收藏</a>
+      <span class="sep">|</span>
+      <a href="javascript:;" onclick="alert('论坛帮助：发帖前请先阅读置顶的《站规》。')">帮助</a>
+    </div>
+    <div class="nick-line">
+      我的马甲：<b id="topNick">路人甲</b>
+      <span class="sep">|</span>
+      <a href="javascript:;" onclick="toggleNickEdit()">换马甲</a>
+      <span id="nickEdit" style="display:none;">
+        <input id="nickIpt" type="text" maxlength="12" style="width:90px;height:19px;padding:0 4px;border:1px solid #7c9ec4;">
+        <a href="javascript:;" onclick="saveNick()">确定</a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- 头部 -->
+<div class="header">
+  <div class="wrap">
+    <div class="logo">海角<em>社区</em></div>
+    <div class="slogan">
+      <div class="big">海内存知己，天涯若比邻</div>
+      <div>全球华人网上家园 · 二〇〇一年建站</div>
+    </div>
+    <div class="search">
+      <input type="text" id="searchIpt" placeholder="搜索帖子标题 / 作者" onkeydown="if(event.key==='Enter')doSearch()">
+      <button onclick="doSearch()">搜索</button>
+    </div>
+  </div>
+</div>
+
+<!-- 导航 -->
+<div class="nav">
+  <div class="wrap">
+    <ul>
+      <li><a href="javascript:;" class="on" onclick="goHome()">论坛首页</a></li>
+      <li><a href="javascript:;" onclick="alert('部落功能暂停开放，敬请期待。')">我的部落</a></li>
+      <li><a href="javascript:;" onclick="alert('相册功能暂停开放，敬请期待。')">相册</a></li>
+      <li><a href="javascript:;" onclick="alert('博客功能暂停开放，敬请期待。')">博客</a></li>
+      <li><a href="javascript:;" onclick="alert('今日排行：1. 灌水专区  2. 天涯杂谈  3. 莲蓬鬼话')">排行榜</a></li>
+      <li><a href="javascript:;" onclick="openPostForm()">我要发帖</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 公告 -->
+  <div class="notice" id="noticeBar">
+    <span class="tag">公告</span>
+    <div class="roll"><span id="noticeText"></span></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- 左侧栏 -->
+    <div class="sidebar">
+      <div class="box">
+        <div class="box-hd"><span>论坛版块</span><a class="more" href="javascript:;" onclick="goHome()">全部</a></div>
+        <ul class="boardlist" id="boardList"></ul>
+      </div>
+
+      <div class="box">
+        <div class="box-hd"><span>社区统计</span></div>
+        <ul class="stat" id="statList"></ul>
+      </div>
+
+      <div class="box">
+        <div class="box-hd"><span>值班版主</span></div>
+        <div class="box-bd" style="color:#666;">
+          天涯杂谈：<a href="javascript:;">南风不竞</a><br>
+          情感天地：<a href="javascript:;">月半小夜曲</a><br>
+          莲蓬鬼话：<a href="javascript:;">老张讲故事</a><br>
+          灌水专区：<a href="javascript:;">一瓢水</a>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="box-hd"><span>在线用户</span></div>
+        <div class="box-bd" style="color:#666;line-height:1.9;">
+          当前在线 <b style="color:#d10000;">128</b> 人<br>
+          其中会员 42 人、游客 86 人<br>
+          <span style="color:#999;">（数据每 5 分钟更新一次）</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="content" id="mainArea"></div>
+
+  </div>
+</div>
+
+<!-- 底部 -->
+<div class="footer">
+  <div class="wrap">
+    <div class="links">
+      <a href="javascript:;" onclick="alert('关于我们：海角社区创建于2001年，是一个由网友共同维护的网上家园。')">关于我们</a>|
+      <a href="javascript:;" onclick="alert('广告服务：请联系站长。')">广告服务</a>|
+      <a href="javascript:;" onclick="alert('友情链接：欢迎交换链接。')">友情链接</a>|
+      <a href="javascript:;" onclick="resetAll()">恢复初始数据</a>
+    </div>
+    <div class="copy">
+      Powered by HaijiaoBBS! 2.0 &nbsp;·&nbsp; 海角社区 版权所有 © 2001-2026
+      &nbsp;·&nbsp; 您是第 <span id="visitCount">8842301</span> 位访问者
+    </div>
+    <div class="marquee-line">本站所有言论仅代表网友个人观点，与本站立场无关。</div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   数据层
+   ========================================================= */
+var STORE_KEY = 'haijiao_forum_v1';
+var NICK_KEY  = 'haijiao_nick_v1';
+
+var BOARDS = [
+  { id: 'zatan',    name: '天涯杂谈', desc: '谈天说地，纵横天下' },
+  { id: 'qinggan',  name: '情感天地', desc: '你的心事，我来倾听' },
+  { id: 'bagua',    name: '娱乐八卦', desc: '八卦有理，YY 无罪' },
+  { id: 'lianpeng', name: '莲蓬鬼话', desc: '夜深了，讲个故事给你听' },
+  { id: 'kaixin',   name: '开心乐园', desc: '大锅饭，小笑话' },
+  { id: 'jingji',   name: '经济论坛', desc: '关心柴米油盐，也关心国计民生' },
+  { id: 'chengshi', name: '城市论坛', desc: '说说你所在的城市' },
+  { id: 'wuwen',    name: '舞文弄墨', desc: '诗词歌赋，风花雪月' },
+  { id: 'guanshui', name: '灌水专区', desc: '灌水有理，浇花无罪' }
+];
+
+function boardName(id) {
+  for (var i = 0; i < BOARDS.length; i++) if (BOARDS[i].id === id) return BOARDS[i].name;
+  return '未知版块';
+}
+
+/* ---------- 初始数据 ---------- */
+function seedData() {
+  return {
+    seq: 100,
+    threads: [
+      {
+        id: 1, board: 'zatan', top: true, good: true,
+        title: '【站规】海角社区基本法（新人必读·2005 年 3 月修订）',
+        author: '值班编辑', reg: '2001-03-16', posts: 8842,
+        time: '2005-03-16 09:12', act: '2005-06-02 14:21', views: 128456,
+        content: '一、本社区是网友自发聚集的网上家园，请大家文明发言，以理服人。\n' +
+                 '二、禁止发布色情、暴力、封建迷信以及危害国家安全的内容，违者封 ID 不另行通知。\n' +
+                 '三、禁止恶意刷屏、恶意顶帖、攻击其他网友，也不要在版内互相拆台。\n' +
+                 '四、转帖请注明出处，尊重原作者的劳动成果。\n' +
+                 '五、个人隐私请自行保护，不要把真实电话、住址发到网上。\n' +
+                 '六、版主有权对违规帖子进行转移、删除、锁定处理，如有异议可站短申诉。\n\n' +
+                 '—— 海角社区值班编辑 谨上',
+        replies: [
+          { author: '南山客', reg: '2002-07-08', posts: 1523, time: '2005-03-16 10:05', content: '沙发！终于抢到一次前排，先顶再说。', sig: '且行且看，且看且行。' },
+          { author: '小叮当', reg: '2004-11-23', posts: 366,  time: '2005-03-16 11:40',
+            content: '板凳。请问版主，签名档最多能放几行啊？我的老是被截掉。' },
+          { author: '值班编辑', reg: '2001-03-16', posts: 8842, time: '2005-03-16 12:02',
+            content: '回楼上：签名档限 3 行、每行 60 字以内，超过自动截断。',
+            quote: '小叮当', sig: '有事请站短，勿在版内追问。' },
+          { author: '老槐树', reg: '2003-01-19', posts: 2311, time: '2005-06-02 14:21',
+            content: '看完了，留个记号。这个社区挺好的，希望一直办下去。' }
+        ]
+      },
+      {
+        id: 2, board: 'qinggan', good: true,
+        title: '八一八那些年我们一起追过的姑娘（连载中）',
+        author: '南风不竞', reg: '2002-05-30', posts: 5210,
+        time: '2005-05-21 22:47', act: '2005-06-01 23:15', views: 96422,
+        content: '认识她的时候是高二，她坐在我前面两排，扎马尾，笑起来眼睛会弯。\n\n' +
+                 '有一天她转过头问我借修正带，我手忙脚乱把笔袋打翻了，整盒笔撒了一地。\n' +
+                 '全班都在看我，只有她蹲下来帮我捡。\n\n' +
+                 '后来我才知道，那盒笔里有我攒了两个月零花钱买的那支派克。\n' +
+                 '这些年我一直留着它，虽然早就写不出墨了。\n\n' +
+                 '（未完待续，今天先写到这里，明天继续。）',
+        replies: [
+          { author: '月半小夜曲', reg: '2002-09-14', posts: 3312, time: '2005-05-21 23:02',
+            content: '沙发。楼主的文字有一种很安静的力量，看着看着就想起了自己的高三。', sig: '夜色温柔，人间值得。' },
+          { author: '路过的小马甲', reg: '2005-04-02', posts: 12, time: '2005-05-22 00:11',
+            content: '催更！催更！催更！重要的事情说三遍，楼主不要太监啊。' },
+          { author: '南风不竞', reg: '2002-05-30', posts: 5210, time: '2005-05-22 08:30',
+            content: '回楼上：本楼绝不太监，最多慢一点。今天在公司被老板骂了一天，回来还要写稿子，苦命。',
+            quote: '路过的小马甲' },
+          { author: '橘子汽水', reg: '2004-06-18', posts: 780, time: '2005-05-23 19:44',
+            content: '为什么我上学的时候就没有人给我捡笔？我们班男生只会抢我的橡皮。', sig: '何以解忧，唯有雪碧。' },
+          { author: '木头人', reg: '2003-11-05', posts: 1892, time: '2005-06-01 23:15',
+            content: '留个脚印，等更新。顺便说一句，那个派克现在还留着，说明楼主是个念旧的人。' }
+        ]
+      },
+      {
+        id: 3, board: 'zatan',
+        title: '求助！电脑频繁蓝屏，重装系统也没用，有没有高人？',
+        author: '菜鸟上路', reg: '2005-05-30', posts: 7,
+        time: '2005-06-01 20:15', act: '2005-06-02 10:33', views: 2140,
+        content: '我的机器是去年配的，赛扬 2.4，256 内存，最近一开机就蓝屏，' +
+                 '屏幕上一堆英文看不懂。重装了三次系统，还是老样子。\n\n' +
+                 '拿去电脑城，师傅说主板坏了，要我换一块，三百多。我总觉得他在忽悠我。\n' +
+                 '有没有懂行的兄弟帮我看看到底是哪儿的问题？在线等，挺急的。',
+        replies: [
+          { author: '硬件狂人', reg: '2003-03-08', posts: 4456, time: '2005-06-01 20:31',
+            content: '楼主先别急着换主板。蓝屏代码是多少？开机的时候按 F8 进安全模式试过没有？\n' +
+                     '另外把你的内存条拔下来，用橡皮擦一擦金手指再插回去，很多时候就是接触不良。',
+            sig: '装机十年，只信螺丝刀。' },
+          { author: '菜鸟上路', reg: '2005-05-30', posts: 7, time: '2005-06-01 20:48',
+            content: '楼上大哥，代码好像是 0x0000007B，我按你说的擦了内存，好像好一点了，但刚才又蓝了一次。',
+            quote: '硬件狂人' },
+          { author: '硬件狂人', reg: '2003-03-08', posts: 4456, time: '2005-06-01 21:03',
+            content: '0x7B 是硬盘控制器的问题。进 BIOS 把 SATA 模式从 AHCI 改成 IDE 试试，' +
+                     '或者换一根硬盘数据线（几块钱的事）。' +
+                     '如果还是不行，才考虑主板。三百多换主板，八成是想让你交学费。' },
+          { author: '一瓢水', reg: '2004-02-11', posts: 6621, time: '2005-06-02 10:33',
+            content: '路过。顺便提醒楼主，电脑城的行情：主板一般一百五到两百，三百多确实贵了。', sig: '灌水有理，浇花无罪。' }
+        ]
+      },
+      {
+        id: 4, board: 'lianpeng',
+        title: '深夜了，讲一个我亲身经历的事……胆小勿入',
+        author: '老张讲故事', reg: '2002-11-20', posts: 3097,
+        time: '2005-05-28 23:50', act: '2005-06-01 01:12', views: 45688,
+        content: '这是 1998 年的事。那年我十九岁，在县城的一家印刷厂上夜班。\n\n' +
+                 '厂子后面有一片老宿舍，早就没人住了，窗户玻璃都碎光了。' +
+                 '每天凌晨三点交接班，我都要从那片宿舍旁边的小路走回去。\n\n' +
+                 '有一天走到一半，我听见楼上有收音机的声音，滋滋啦啦的，像是在播新闻。\n' +
+                 '我抬头看了一眼，三楼的窗户里，有一点很弱的红光。\n\n' +
+                 '第二天我问厂里的老师傅，那片楼里是不是还住着人。' +
+                 '老师傅点了根烟，半天才说：那楼五年前就断水断电了。\n\n' +
+                 '（后面还有一段，今晚先到这里。）',
+        replies: [
+          { author: '夜猫子', reg: '2004-09-01', posts: 2210, time: '2005-05-29 00:20',
+            content: '完了，我半夜十二点看到这个帖子，现在不敢去阳台收衣服了。', sig: '黑夜给了我黑色的眼睛。' },
+          { author: '不信邪', reg: '2005-01-15', posts: 433, time: '2005-05-29 09:07',
+            content: '纯属心理作用吧。老楼里面老鼠跑动、风穿过破窗户，都会发出声音，听成收音机很正常。' },
+          { author: '老张讲故事', reg: '2002-11-20', posts: 3097, time: '2005-05-29 12:40',
+            content: '回楼上：我当时也是这么安慰自己的。但那年冬天，我同事也听见了，' +
+                     '而且他听见的是一首老歌，能哼出调子来。' + '\n\n' + '这就不好解释了。',
+            quote: '不信邪' },
+          { author: '阿仙', reg: '2003-06-27', posts: 1156, time: '2005-06-01 01:12',
+            content: '莲蓬的帖子永远是这个味道，看得人后背发凉又想看下一段。楼主快更。' }
+        ]
+      },
+      {
+        id: 5, board: 'kaixin',
+        title: '今天在网吧遇到一个高手，崇拜 ing……',
+        author: '网吧小王子', reg: '2005-03-19', posts: 88,
+        time: '2005-05-31 16:22', act: '2005-05-31 20:45', views: 3120,
+        content: '我们学校门口那家网吧，下午来了个大哥，坐下就开 CS，' +
+                 '一个人打对面五个，爆头爆得那叫一个脆。\n\n' +
+                 '全场都在围观，网管都不催他下机了。\n\n' +
+                 '最牛的是他走的时候，烟头往烟灰缸里一按，说了句“打游戏嘛，开心就好”，' +
+                 '然后骑上自行车走了。\n\n' +
+                 '我决定从今天开始练枪。',
+        replies: [
+          { author: '键盘侠本侠', reg: '2004-08-08', posts: 932, time: '2005-05-31 17:01',
+            content: '年轻人，先把家里的作业做完。打游戏开心是开心，别耽误正事。' },
+          { author: '快乐小丸子', reg: '2005-02-14', posts: 210, time: '2005-05-31 18:33',
+            content: '哈哈哈哈最后那句“骑上自行车走了”太有画面感了，有种大侠归隐的感觉。', sig: '开心是一天，不开心也是一天。' },
+          { author: '网吧小王子', reg: '2005-03-19', posts: 88, time: '2005-05-31 20:45',
+            content: '回楼上：真的是这样！我现在每次路过那家网吧，都会往里看一眼，可惜再也没见过他。',
+            quote: '快乐小丸子' }
+        ]
+      },
+      {
+        id: 6, board: 'jingji',
+        title: '房价到底什么时候才能降？说说我看房半年的经历',
+        author: '焦虑的三十岁', reg: '2003-04-25', posts: 1744,
+        time: '2005-05-25 11:08', act: '2005-06-02 09:20', views: 28760,
+        content: '从去年冬天开始看房，到现在半年了，看了不下四十套。\n\n' +
+                 '凡是地段好一点的，价格一个月一个样，中介永远说“再不上车就来不及了”。\n' +
+                 '手里攒的十几万，去年够付首付，今年只够付个厕所。\n\n' +
+                 '我就想问一句：这房价，到底有没有个头？',
+        replies: [
+          { author: '老会计', reg: '2002-01-30', posts: 3320, time: '2005-05-25 13:22',
+            content: '买房这事，主要看你自己的需求和承受能力。' +
+                     '自住的话，合适的时机就是你能付得起的时候；投资的话，风险自负。\n\n' +
+                     '不要把全部身家压进去，也不要因为涨价就慌乱，这两样都容易出事。',
+            sig: '算盘打得响，日子过得稳。' },
+          { author: '小城故事', reg: '2004-12-12', posts: 655, time: '2005-05-26 08:15',
+            content: '我在小城市，房价才两千出头，压力小很多。大城市有大城市的好，小地方有小的安稳。' },
+          { author: '焦虑的三十岁', reg: '2003-04-25', posts: 1744, time: '2005-06-02 09:20',
+            content: '谢谢各位。看完大家的回复，我打算先把钱存着，不着急了。' + '\n\n' + '租房子住也没什么不好，至少心里踏实。',
+            quote: '老会计' }
+        ]
+      },
+      {
+        id: 7, board: 'chengshi',
+        title: '我在北京的第七年：从地下室到五环外的一间小屋',
+        author: '北漂小张', reg: '2002-09-09', posts: 2489,
+        time: '2005-05-18 21:40', act: '2005-05-30 19:02', views: 18930,
+        content: '1998 年来的北京，第一站是西直门附近的一个地下室，八平米，月租一百八。\n\n' +
+                 '夏天潮得墙上长毛，冬天暖气不热，睡觉要穿毛衣。\n\n' +
+                 '七年过去了，我搬了六次家，现在住在五环外一间二十平的小屋，' +
+                 '阳台上能看到一小块天。\n\n' +
+                 '不后悔。至少现在下楼买个西瓜，不用担心被房东赶走。',
+        replies: [
+          { author: '同样漂着', reg: '2003-10-17', posts: 1204, time: '2005-05-19 10:26',
+            content: '看完鼻子有点酸。我也是地下室里出来的人，现在在南边租了个一居室。' + '\n\n' + '共勉。',
+            sig: '不认输，就不算输。' },
+          { author: '本地土著', reg: '2004-03-03', posts: 903, time: '2005-05-20 15:44',
+            content: '作为一个北京人，挺佩服你们的。这座城市因为你们才热闹起来。' },
+          { author: '北漂小张', reg: '2002-09-09', posts: 2489, time: '2005-05-30 19:02',
+            content: '回楼上的土著兄弟：谢谢。其实在哪儿都不容易，互相体谅最重要。',
+            quote: '本地土著' }
+        ]
+      },
+      {
+        id: 8, board: 'wuwen',
+        title: '写给我未来女朋友的一封信',
+        author: '半盏清茶', reg: '2003-07-21', posts: 1580,
+        time: '2005-05-14 22:10', act: '2005-05-27 21:33', views: 12045,
+        content: '你好，虽然我还不知道你的名字，也不知道你现在在哪里。\n\n' +
+                 '我今年二十六岁，在一家小公司做设计，工资不高，租的房子朝北，' +
+                 '冬天有点冷，但我买了两个暖水袋，会给你留一个。\n\n' +
+                 '我不太会说话，也不太会送花。但如果你来，我会记得你不吃香菜，' +
+                 '记得你怕黑，记得在你说“没事”的时候多问一句。\n\n' +
+                 '希望你来的时候，我还是个温和的人。',
+        replies: [
+          { author: '一叶知秋', reg: '2004-05-19', posts: 877, time: '2005-05-15 09:32',
+            content: '写得真好。看得我一个已婚妇女都跟着心动了，哈哈。', sig: '一叶知秋，秋亦知我。' },
+          { author: '小葵', reg: '2005-04-11', posts: 145, time: '2005-05-16 20:19',
+            content: '“记得在你说没事的时候多问一句”……这一句就够了。楼主一定会遇到的。' },
+          { author: '半盏清茶', reg: '2003-07-21', posts: 1580, time: '2005-05-27 21:33',
+            content: '谢谢两位。前几天路过花店，第一次买了花回家，插在矿泉水瓶里。' + '\n\n' + '发现日子也没那么难熬。',
+            quote: '小葵' }
+        ]
+      },
+      {
+        id: 9, board: 'bagua',
+        title: '818 我们单位那位把领导办公室当成自家客厅的同事',
+        author: '吃瓜群众', reg: '2004-10-08', posts: 1330,
+        time: '2005-05-29 12:05', act: '2005-06-01 17:40', views: 33120,
+        content: '先说明，纯粹八一八，不针对任何人。\n\n' +
+                 '我们单位有个同事，进领导办公室从来不敲门，推门就进，' +
+                 '进去还顺手把门带上，然后自己倒杯水坐下。\n\n' +
+                 '有一次领导正在打电话，他坐那儿听完了整通电话，' +
+                 '最后还说了一句“这位客户挺难缠啊”。\n\n' +
+                 '最神的是，领导居然没生气，还给他递了根烟。',
+        replies: [
+          { author: 'office 老油条', reg: '2003-02-16', posts: 2861, time: '2005-05-29 13:20',
+            content: '这种人有两种可能：要么后台硬，要么业务强到领导离不开他。' + '\n\n' + '你猜是哪种？',
+            sig: '办公室里，先做人后做事。' },
+          { author: '吃瓜群众', reg: '2004-10-08', posts: 1330, time: '2005-05-29 14:01',
+            content: '回楼上：两种都占。据说他一个人扛了部门三分之一的业绩。', quote: 'office 老油条' },
+          { author: '小透明', reg: '2005-05-02', posts: 23, time: '2005-06-01 17:40',
+            content: '学到了，原来在职场里，实力才是最大的敲门砖。我回去好好干活了。' }
+        ]
+      },
+      {
+        id: 10, board: 'guanshui',
+        title: '灌水帖：今天，你天涯了吗？',
+        author: '一瓢水', reg: '2004-02-11', posts: 6621,
+        time: '2005-05-01 08:00', act: '2005-06-02 08:12', views: 88450,
+        content: '老规矩，本楼不限话题，随便聊。\n\n' +
+                 '先说我的：今天上午上了半天班，下午溜出来上网吧，' +
+                 '结果发现天涯又打不开了，刷新了十几次才进来。\n\n' +
+                 '楼下接上，说说你今天都干了啥。',
+        replies: [
+          { author: '沙发王', reg: '2004-07-07', posts: 2210, time: '2005-05-01 08:02',
+            content: '沙发！我今天起晚了，迟到半小时，被扣了五十块。求安慰。', sig: '沙发在哪里，我就在哪里。' },
+          { author: '小叮当', reg: '2004-11-23', posts: 366, time: '2005-05-01 09:15',
+            content: '楼上别哭，我比你还惨，我迟到一小时，全勤奖没了。' },
+          { author: '雨夜听风', reg: '2003-08-24', posts: 4021, time: '2005-05-02 21:30',
+            content: '我今天哪儿也没去，在家把《围城》又看了一遍。' + '\n\n' + '越看越觉得钱钟书是真的很坏，也是很真的聪明。' },
+          { author: '夜班司机', reg: '2004-11-02', posts: 733, time: '2005-06-02 08:12',
+            content: '刚下夜班，来灌一瓢。今天跑了三百公里，屁股都坐麻了。' + '\n\n' + '各位早。' }
+        ]
+      },
+      {
+        id: 11, board: 'zatan', good: true,
+        title: '关于人生的一点胡思乱想（写完就去睡了）',
+        author: '南山客', reg: '2002-07-08', posts: 1523,
+        time: '2005-05-10 01:20', act: '2005-05-24 22:48', views: 9870,
+        content: '活到三十岁，慢慢明白几件事。\n\n' +
+                 '一、你没法让所有人都喜欢你，所以先让自己不讨厌自己。\n' +
+                 '二、钱很重要，但没有重要到值得你把身体和良心都押上去。\n' +
+                 '三、很多人不是走散了，是本来就不在同一条路上。\n' +
+                 '四、难过的时候就好好睡一觉，第二天太阳照样升起来。\n\n' +
+                 '以上都是废话。但废话偶尔也能当饭吃。',
+        replies: [
+          { author: '半盏清茶', reg: '2003-07-21', posts: 1580, time: '2005-05-10 08:44',
+            content: '第三条看哭了。前阵子刚和一个十年的朋友断了联系，一直想不通，现在想通了。',
+            sig: '清茶半盏，知己两三。' },
+          { author: '老槐树', reg: '2003-01-19', posts: 2311, time: '2005-05-24 22:48',
+            content: '说得挺好。收藏了。' + '\n\n' + '三十岁的人，能把这些想明白，已经比很多人强了。' }
+        ]
+      },
+      {
+        id: 12, board: 'zatan',
+        title: '还有谁记得天涯最早的那张首页图？',
+        author: '老槐树', reg: '2003-01-19', posts: 2311,
+        time: '2005-05-09 15:55', act: '2005-05-19 20:11', views: 7640,
+        content: '今天翻旧硬盘，翻出来一张 2001 年的截图。\n\n' +
+                 '那时候的首页特别简单，蓝底白字，一个不大的 logo，' +
+                 '下面几行小字写着版块名字。\n\n' +
+                 '那会儿上网还是拨号，一打开就是一串“滴滴嘟嘟”的声音，' +
+                 '连接成功之后，能开心一整天。\n\n' +
+                 '时代变了，但那种感觉我一直记得。',
+        replies: [
+          { author: '拨号上网', reg: '2001-11-11', posts: 5602, time: '2005-05-09 17:30',
+            content: '记得。那时候为了省电话费，都是半夜爬起来上网，一小时两块钱，心疼得要死。',
+            sig: '滴滴嘟嘟——连接成功，欢迎来到互联网。' },
+          { author: '小马甲一号', reg: '2005-01-20', posts: 66, time: '2005-05-19 20:11',
+            content: '我是新来的，没见过老版本。看你们说得这么热闹，感觉错过了一个时代。' }
+        ]
+      }
+    ]
+  };
+}
+
+/* =========================================================
+   状态与工具
+   ========================================================= */
+var db = null;
+var view = { name: 'list', board: 'all', page: 1, threadId: null, keyword: '' };
+var PER_PAGE = 10;
+
+function uid() { db.seq += 1; return db.seq; }
+
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {}
+}
+function load() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (raw) { db = JSON.parse(raw); }
+  } catch (e) { db = null; }
+  if (!db || !db.threads) { db = seedData(); save(); }
+}
+function resetAll() {
+  if (!confirm('确定要恢复到初始数据吗？你发的帖子、回帖都会被清空。')) return;
+  db = seedData(); save();
+  view = { name: 'list', board: 'all', page: 1, threadId: null, keyword: '' };
+  render();
+}
+
+function getNick() {
+  try { return localStorage.getItem(NICK_KEY) || '路人甲'; } catch (e) { return '路人甲'; }
+}
+function setNick(n) {
+  try { localStorage.setItem(NICK_KEY, n); } catch (e) {}
+}
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function nl2br(s) { return esc(s); }
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function nowStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+         ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function agoStr(t) {
+  var m = String(t).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!m) return t;
+  var d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  var diff = Date.now() - d.getTime();
+  if (diff < 0) return t;
+  var min = Math.floor(diff / 60000);
+  if (min < 1) return '刚刚';
+  if (min < 60) return min + ' 分钟前';
+  var h = Math.floor(min / 60);
+  if (h < 24) return h + ' 小时前';
+  var day = Math.floor(h / 24);
+  if (day < 30) return day + ' 天前';
+  return t;
+}
+
+var AV_COLORS = ['#5b86c4', '#c06a6a', '#7aa06a', '#a07aa0', '#c0985b', '#5b9aa0', '#8a7ac0', '#c07a95'];
+function avatarColor(name) {
+  var h = 0, s = String(name || '?');
+  for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 99991;
+  return AV_COLORS[h % AV_COLORS.length];
+}
+function avatarBox(name, cls) {
+  var ch = esc(String(name || '?').charAt(0));
+  return '<div class="' + (cls || 'avatar') + '" style="background:' + avatarColor(name) + '">' + ch + '</div>';
+}
+function levelName(posts) {
+  var p = posts || 0;
+  if (p < 50) return '新手上路';
+  if (p < 300) return '初级会员';
+  if (p < 1000) return '正式会员';
+  if (p < 3000) return '老会员';
+  if (p < 6000) return '资深会员';
+  return '元老级人物';
+}
+
+function findThread(id) {
+  for (var i = 0; i < db.threads.length; i++) if (db.threads[i].id === id) return db.threads[i];
+  return null;
+}
+function replyCount(t) { return t.replies ? t.replies.length : 0; }
+
+function sortedThreads() {
+  var list = db.threads.slice();
+  list.sort(function (a, b) {
+    if (!!a.top !== !!b.top) return a.top ? -1 : 1;
+    return String(b.act).localeCompare(String(a.act));
+  });
+  return list;
+}
+function filteredThreads() {
+  var list = sortedThreads();
+  if (view.board !== 'all') {
+    list = list.filter(function (t) { return t.board === view.board; });
+  }
+  if (view.keyword) {
+    var k = view.keyword.toLowerCase();
+    list = list.filter(function (t) {
+      return String(t.title).toLowerCase().indexOf(k) >= 0 ||
+             String(t.author).toLowerCase().indexOf(k) >= 0 ||
+             String(t.content).toLowerCase().indexOf(k) >= 0;
+    });
+  }
+  return list;
+}
+
+/* =========================================================
+   渲染：左侧栏
+   ========================================================= */
+function renderSidebar() {
+  var counts = {};
+  db.threads.forEach(function (t) { counts[t.board] = (counts[t.board] || 0) + 1; });
+
+  var html = '<li><a href="javascript:;" class="' + (view.board === 'all' ? 'on' : '') +
+             '" onclick="pickBoard(\'all\')"><span class="bname">全部版块</span><span class="cnt">' +
+             db.threads.length + '</span></a></li>';
+  BOARDS.forEach(function (b) {
+    html += '<li><a href="javascript:;" class="' + (view.board === b.id ? 'on' : '') +
+            '" onclick="pickBoard(\'' + b.id + '\')" title="' + esc(b.desc) + '">' +
+            '<span class="bname">' + esc(b.name) + '</span><span class="cnt">' +
+            (counts[b.id] || 0) + '</span></a></li>';
+  });
+  document.getElementById('boardList').innerHTML = html;
+
+  var totalReplies = 0;
+  db.threads.forEach(function (t) { totalReplies += replyCount(t); });
+  var today = nowStr().slice(0, 10);
+  var todayCount = 0;
+  db.threads.forEach(function (t) {
+    if (String(t.time).slice(0, 10) === today) todayCount++;
+    (t.replies || []).forEach(function (r) { if (String(r.time).slice(0, 10) === today) todayCount++; });
+  });
+
+  document.getElementById('statList').innerHTML =
+    '<li><span>主题总数</span><b>' + db.threads.length + '</b></li>' +
+    '<li><span>帖子总数</span><b>' + (db.threads.length + totalReplies) + '</b></li>' +
+    '<li><span>会员总数</span><b>18,204</b></li>' +
+    '<li><span>今日发帖</span><b>' + todayCount + '</b></li>' +
+    '<li><span>昨日发帖</span><b>231</b></li>' +
+    '<li><span>最高日发帖</span><b>8,823</b></li>' +
+    '<li><span>建站日期</span><b>2001-03-16</b></li>';
+}
+
+/* =========================================================
+   渲染：帖子列表
+   ========================================================= */
+function renderList() {
+  var list = filteredThreads();
+  var total = list.length;
+  var pages = Math.max(1, Math.ceil(total / PER_PAGE));
+  if (view.page > pages) view.page = pages;
+  var start = (view.page - 1) * PER_PAGE;
+  var rows = list.slice(start, start + PER_PAGE);
+
+  var title = view.keyword ? ('搜索“' + esc(view.keyword) + '”的结果')
+                           : (view.board === 'all' ? '全部主题' : boardName(view.board));
+
+  var html = '';
+  html += '<div class="box">';
+  html += '<div class="box-hd"><span>' + title + ' <span style="font-weight:normal;color:#888;">（共 ' + total + ' 个主题）</span></span>' +
+          '<span><button class="btn btn-primary" onclick="openPostForm()">发表新帖</button></span></div>';
+
+  if (!rows.length) {
+    html += '<div class="empty-tip">这里还静悄悄的，还没有人发过帖子。<br><br>' +
+            '<button class="btn btn-primary" onclick="openPostForm()">我来发第一帖</button></div>';
+    html += '</div>';
+    document.getElementById('mainArea').innerHTML = html;
+    return;
+  }
+
+  html += '<table class="tlist"><thead><tr>';
+  html += '<th class="col-icon"></th>';
+  html += '<th>主题</th>';
+  html += '<th class="col-author">作者</th>';
+  html += '<th class="col-num">回复/查看</th>';
+  html += '<th class="col-act">最后发表</th>';
+  html += '</tr></thead><tbody>';
+
+  rows.forEach(function (t) {
+    var last = t.replies && t.replies.length ? t.replies[t.replies.length - 1] : null;
+    var lastAuthor = last ? last.author : t.author;
+    var lastTime = last ? last.time : t.time;
+    var isNew = (Date.now() - toMs(lastTime)) < 86400000 * 3;
+
+    html += '<tr>';
+    html += '<td class="col-icon">' + (isNew
+      ? '<span style="color:#d10000;font-size:15px;" title="有新回复">●</span>'
+      : '<span style="color:#ccd6e2;font-size:15px;">●</span>') + '</td>';
+    html += '<td class="t-title">';
+    if (t.top) html += '<span class="tagbadge tag-top">置顶</span>';
+    if (t.good) html += '<span class="tagbadge tag-good">精华</span>';
+    if (replyCount(t) >= 4) html += '<span class="tagbadge tag-hot">热帖</span>';
+    html += '<a href="javascript:;" onclick="openThread(' + t.id + ')">' + esc(t.title) + '</a>';
+    html += '<span style="color:#aaa;margin-left:6px;">[' + esc(boardName(t.board)) + ']</span>';
+    html += '</td>';
+    html += '<td class="col-author"><span class="avatar-mini" style="background:' + avatarColor(t.author) + '">' +
+            esc(String(t.author).charAt(0)) + '</span><a href="javascript:;" onclick="alert(\'这是 ' +
+            esc(t.author) + ' 的个人资料页。\')">' + esc(t.author) + '</a></td>';
+    html += '<td class="col-num">' + replyCount(t) + ' / ' + t.views + '</td>';
+    html += '<td class="col-act"><a href="javascript:;" onclick="alert(\'最后回复：' + esc(lastAuthor) +
+            ' 于 ' + esc(lastTime) + '\')">' + esc(lastTime.slice(5, 16)) + '</a><br>' +
+            '<span style="color:#aaa;">' + esc(lastAuthor) + '</span></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  html += '<div class="pager">';
+  html += '<span class="info">第 ' + view.page + ' / ' + pages + ' 页</span>';
+  html += '<a href="javascript:;" onclick="goPage(' + (view.page - 1) + ')">&laquo; 上一页</a>';
+  for (var p = 1; p <= pages; p++) {
+    if (p === view.page) html += '<span class="cur">' + p + '</span>';
+    else html += '<a href="javascript:;" onclick="goPage(' + p + ')">' + p + '</a>';
+  }
+  html += '<a href="javascript:;" onclick="goPage(' + (view.page + 1) + ')">下一页 &raquo;</a>';
+  html += '</div>';
+
+  html += '</div>';
+  document.getElementById('mainArea').innerHTML = html;
+}
+function toMs(t) {
+  var m = String(t).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!m) return 0;
+  return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
+}
+
+/* =========================================================
+   渲染：帖子详情（楼主 + 每层楼，楼层之间空一行）
+   ========================================================= */
+function renderThread() {
+  var t = findThread(view.threadId);
+  if (!t) { view.name = 'list'; renderList(); return; }
+
+  var html = '';
+  html += '<div class="crumb"><a href="javascript:;" onclick="goHome()">海角社区论坛</a> &raquo; ' +
+          '<a href="javascript:;" onclick="pickBoard(\'' + t.board + '\')">' + esc(boardName(t.board)) +
+          '</a> &raquo; <span>正文</span></div>';
+
+  html += '<div class="toolbar">';
+  html += '<div class="ttl">';
+  if (t.top) html += '<span class="tagbadge tag-top">置顶</span>';
+  if (t.good) html += '<span class="tagbadge tag-good">精华</span>';
+  html += esc(t.title) + '</div>';
+  html += '<button class="btn" onclick="goHome()">&laquo; 返回列表</button>';
+  html += '<button class="btn btn-primary" onclick="focusReply()">回复本帖</button>';
+  html += '<button class="btn" onclick="openPostForm()">发表新帖</button>';
+  html += '</div>';
+
+  var total = 1 + replyCount(t);
+  html += '<div style="color:#888;padding:0 2px 8px;">共 ' + total + ' 层楼 · 查看 ' + t.views +
+          ' 次 · 最后更新 ' + esc(t.act) + '</div>';
+
+  /* --- 楼主 --- */
+  html += floorHtml({
+    isLz: true, floor: 1, name: t.author, reg: t.reg, posts: t.posts,
+    time: t.time, content: t.content, sig: '——' + t.author + ' 的签名：' +
+      (t.board === 'lianpeng' ? '故事讲完了，就该睡了。' : '海角社区，老朋友们的网上家园。'),
+    good: t.good
+  });
+
+  /* --- 回复楼层，每层之间空一行 --- */
+  (t.replies || []).forEach(function (r, i) {
+    html += '<div class="reply-gap"></div>';
+    html += floorHtml({
+      isLz: r.author === t.author, floor: i + 2, name: r.author,
+      reg: r.reg, posts: r.posts, time: r.time, content: r.content,
+      sig: r.sig, quote: r.quote, sofa: i
+    });
+  });
+
+  /* --- 快速回复框 --- */
+  html += '<div class="editor" id="replyEditor">';
+  html += '<div class="box-hd"><span>快速回复</span><span style="font-weight:normal;color:#888;">' +
+          '回帖请遵守站规，禁止人身攻击</span></div>';
+  html += '<div class="box-bd">';
+  html += '<div class="field"><label>昵称：</label><div class="ctl" style="max-width:220px;">' +
+          '<input class="ipt" id="replyNick" type="text" maxlength="12" value="' + esc(getNick()) + '"></div></div>';
+  html += '<div class="field"><label>内容：</label><div class="ctl">' +
+          '<textarea class="txa" id="replyText" placeholder="说说你的看法……（Ctrl + Enter 快速发表）"></textarea>';
+  html += '<div class="smilebar">表情：' +
+          '<a href="javascript:;" onclick="insText(\'（笑）\')">（笑）</a>' +
+          '<a href="javascript:;" onclick="insText(\'（汗）\')">（汗）</a>' +
+          '<a href="javascript:;" onclick="insText(\'orz\')">orz</a>' +
+          '<a href="javascript:;" onclick="insText(\'顶！\')">顶！</a>' +
+          '<a href="javascript:;" onclick="insText(\'楼主快更新！\')">楼主快更新！</a>' +
+          '</div></div></div>';
+  html += '<div class="editor-ft"><button class="btn btn-primary" onclick="submitReply()">发表回复</button>' +
+          '<button class="btn" onclick="focusReply()">清空重写</button>' +
+          '<span class="hint">提示：回复成功后会追加到本帖最后，自动占新楼层。</span></div>';
+  html += '</div></div>';
+
+  document.getElementById('mainArea').innerHTML = html;
+
+  var ta = document.getElementById('replyText');
+  if (ta) {
+    ta.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitReply(); }
+    });
+  }
+}
+
+var SOFA = ['沙发', '板凳', '地板'];
+function floorHtml(o) {
+  var sofaTag = (!o.isLz && o.sofa < 3) ? '<span class="fsofa">' + SOFA[o.sofa] + '</span>' : '';
+  var h = '';
+  h += '<div class="floor">';
+  h += '<div class="floor-hd">';
+  h += '<span class="fno">' + (o.isLz ? '楼主' : '第 ' + (o.floor - 1) + ' 楼') + '</span>';
+  h += sofaTag;
+  h += '<span style="color:#999;">发表于 ' + esc(o.time) + '</span>';
+  h += '<span class="right">' +
+       '<a href="javascript:;" onclick="alert(\'只看楼主：本功能在完整版中开放。\')">只看楼主</a>' +
+       '&nbsp;|&nbsp;<a href="javascript:;" onclick="alert(\'已收藏本帖。\')">收藏</a>' +
+       '&nbsp;|&nbsp;<a href="javascript:;" onclick="alert(\'已举报，版主会尽快处理。\')">举报</a>' +
+       '</span>';
+  h += '</div>';
+  h += '<div class="floor-body">';
+  h += '<div class="user-col">';
+  h += avatarBox(o.name);
+  h += '<div class="uname">' + esc(o.name) + (o.isLz ? ' <span class="lz">[楼主]</span>' : '') + '</div>';
+  h += '<div class="ulevel">' + levelName(o.posts) + '</div>';
+  h += '<div class="uinfo">' +
+       '<div><span class="k">注册：</span>' + esc(o.reg || '2005-01-01') + '</div>' +
+       '<div><span class="k">帖子：</span>' + (o.posts || 0) + '</div>' +
+       '<div><span class="k">积分：</span>' + Math.floor((o.posts || 0) * 1.7 + 12) + '</div>' +
+       '<div><span class="k">状态：</span>在线</div>' +
+       '</div>';
+  h += '</div>';
+  h += '<div class="main-col">';
+  h += '<div class="post-content">';
+  if (o.quote) {
+    h += '<div class="quote">引用自 ' + esc(o.quote) + ' 的发言</div>';
+  }
+  h += nl2br(o.content);
+  h += '</div>';
+  if (o.sig) h += '<div class="sig">' + esc(o.sig) + '</div>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="floor-ft">' +
+       '<a href="javascript:;" onclick="quoteFloor(' + o.floor + ')">引用</a>' +
+       '<a href="javascript:;" onclick="alert(\'顶一下！本层人气 +1\')">顶</a>' +
+       '<a href="javascript:;" onclick="alert(\'已踩，感谢反馈。\')">踩</a>' +
+       '</div>';
+  h += '</div>';
+  return h;
+}
+
+/* =========================================================
+   渲染：发新帖
+   ========================================================= */
+function renderPostForm() {
+  var opts = '';
+  BOARDS.forEach(function (b) {
+    opts += '<option value="' + b.id + '"' + (view.board === b.id ? ' selected' : '') + '>' +
+            esc(b.name) + ' —— ' + esc(b.desc) + '</option>';
+  });
+
+  var html = '';
+  html += '<div class="crumb"><a href="javascript:;" onclick="goHome()">海角社区论坛</a> &raquo; <span>发表新帖</span></div>';
+  html += '<div class="editor">';
+  html += '<div class="box-hd"><span>发表新帖</span><span style="font-weight:normal;color:#888;">标题请写清楚，方便网友回复</span></div>';
+  html += '<div class="box-bd">';
+  html += '<div class="field"><label>版块：</label><div class="ctl"><select class="ipt" id="newBoard">' + opts + '</select></div></div>';
+  html += '<div class="field"><label>昵称：</label><div class="ctl" style="max-width:220px;">' +
+          '<input class="ipt" id="newNick" type="text" maxlength="12" value="' + esc(getNick()) + '"></div></div>';
+  html += '<div class="field"><label>标题：</label><div class="ctl">' +
+          '<input class="ipt" id="newTitle" type="text" maxlength="60" placeholder="例如：求助！我的电脑老是蓝屏怎么办？"></div></div>';
+  html += '<div class="field"><label>内容：</label><div class="ctl">' +
+          '<textarea class="txa" id="newContent" style="min-height:170px" placeholder="把你想说的话写在这里……&#10;（可以分段，回车换行）"></textarea>' +
+          '<div class="smilebar">常用前缀：' +
+          '<a href="javascript:;" onclick="insText2(\'【求助】\')">【求助】</a>' +
+          '<a href="javascript:;" onclick="insText2(\'【原创】\')">【原创】</a>' +
+          '<a href="javascript:;" onclick="insText2(\'【转帖】\')">【转帖】</a>' +
+          '<a href="javascript:;" onclick="insText2(\'【八卦】\')">【八卦】</a>' +
+          '<a href="javascript:;" onclick="insText2(\'【灌水】\')">【灌水】</a>' +
+          '</div></div></div>';
+  html += '<div class="editor-ft">' +
+          '<button class="btn btn-primary" onclick="submitPost()">发表</button>' +
+          '<button class="btn" onclick="goHome()">取消</button>' +
+          '<span class="hint">发帖后可以在帖子底部继续回复。</span>' +
+          '</div>';
+  html += '</div></div>';
+
+  document.getElementById('mainArea').innerHTML = html;
+  var ti = document.getElementById('newTitle');
+  if (ti) ti.focus();
+}
+
+/* =========================================================
+   行为
+   ========================================================= */
+function render() {
+  renderSidebar();
+  if (view.name === 'list') renderList();
+  else if (view.name === 'thread') renderThread();
+  else if (view.name === 'post') renderPostForm();
+  buildNotice();
+  window.scrollTo(0, 0);
+}
+
+function buildNotice() {
+  var books = ['本站已运行多年，感谢各位老友的陪伴。',
+               '站内有大量优质原创帖，欢迎在“天涯杂谈”和“莲蓬鬼话”里慢慢翻。',
+               '发帖请勿包含个人隐私信息。',
+               '如果你在别的地方看到眼熟的帖子，说明你也是老网民了。'];
+  document.getElementById('noticeText').textContent = '　　' + books.join('　　');
+}
+
+function goHome() {
+  view.name = 'list'; view.threadId = null; view.keyword = '';
+  render();
+}
+function pickBoard(id) {
+  view.board = id; view.name = 'list'; view.threadId = null;
+  view.page = 1; view.keyword = '';
+  render();
+}
+function goPage(p) {
+  var pages = Math.max(1, Math.ceil(filteredThreads().length / PER_PAGE));
+  if (p < 1 || p > pages) return;
+  view.page = p; render();
+}
+function openPostForm() {
+  view.name = 'post'; render();
+}
+function openThread(id) {
+  var t = findThread(id);
+  if (!t) return;
+  t.views = (t.views || 0) + 1;
+  save();
+  view.name = 'thread'; view.threadId = id;
+  render();
+}
+function doSearch() {
+  var k = document.getElementById('searchIpt').value.trim();
+  view.keyword = k; view.name = 'list'; view.page = 1; view.board = 'all';
+  render();
+}
+function makeNick() {
+  var n = '路人' + (1000 + Math.floor(Math.random() * 8999));
+  setNick(n);
+  return n;
+}
+
+function focusReply() {
+  var ta = document.getElementById('replyText');
+  if (ta) { ta.value = ''; ta.focus(); }
+}
+function insText(s) {
+  var ta = document.getElementById('replyText');
+  if (!ta) return;
+  ta.value += s;
+  ta.focus();
+}
+function insText2(s) {
+  var ta = document.getElementById('newContent');
+  if (!ta) return;
+  ta.value += s;
+  ta.focus();
+}
+function quoteFloor(floor) {
+  var t = findThread(view.threadId);
+  if (!t) return;
+  var name = (floor <= 1) ? t.author : ((t.replies[floor - 2] || {}).author || '网友');
+  var ta = document.getElementById('replyText');
+  if (!ta) return;
+  ta.value = '【引用 ' + name + ' 的发言】\n' + ta.value;
+  ta.focus();
+  var ed = document.getElementById('replyEditor');
+  if (ed) ed.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function submitReply() {
+  var t = findThread(view.threadId);
+  if (!t) return;
+  var nick = (document.getElementById('replyNick').value || '').trim() || makeNick();
+  var text = (document.getElementById('replyText').value || '').trim();
+  if (!text) { alert('回复内容不能为空。'); return; }
+
+  setNick(nick);
+  t.replies = t.replies || [];
+  t.replies.push({
+    author: nick,
+    reg: nowStr().slice(0, 10),
+    posts: 1 + Math.floor(Math.random() * 40),
+    time: nowStr(),
+    content: text
+  });
+  t.act = nowStr();
+  save();
+
+  view.name = 'thread';
+  render();
+  var floors = document.querySelectorAll('.floor');
+  if (floors.length) floors[floors.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('topNick').textContent = nick;
+}
+
+function submitPost() {
+  var board = document.getElementById('newBoard').value;
+  var nick = (document.getElementById('newNick').value || '').trim() || makeNick();
+  var title = (document.getElementById('newTitle').value || '').trim();
+  var content = (document.getElementById('newContent').value || '').trim();
+
+  if (!title) { alert('请填写帖子标题。'); return; }
+  if (title.length < 4) { alert('标题太短了，至少要 4 个字。'); return; }
+  if (!content) { alert('请填写帖子内容。'); return; }
+
+  setNick(nick);
+  var id = uid();
+  db.threads.unshift({
+    id: id, board: board, title: title, author: nick,
+    reg: nowStr().slice(0, 10),
+    posts: 1 + Math.floor(Math.random() * 40),
+    time: nowStr(), act: nowStr(), views: 1,
+    content: content, replies: []
+  });
+  save();
+  document.getElementById('topNick').textContent = nick;
+
+  view.name = 'thread'; view.threadId = id;
+  render();
+}
+
+/* 换马甲 */
+function toggleNickEdit() {
+  var box = document.getElementById('nickEdit');
+  if (box.style.display === 'none') {
+    box.style.display = 'inline';
+    var i = document.getElementById('nickIpt');
+    i.value = getNick(); i.focus(); i.select();
+  } else {
+    box.style.display = 'none';
+  }
+}
+function saveNick() {
+  var v = (document.getElementById('nickIpt').value || '').trim();
+  if (!v) { alert('昵称不能为空。'); return; }
+  setNick(v);
+  document.getElementById('topNick').textContent = v;
+  document.getElementById('nickEdit').style.display = 'none';
+  render();
+}
+
+/* =========================================================
+   启动
+   ========================================================= */
+(function init() {
+  load();
+  document.getElementById('topNick').textContent = getNick();
+  var n = 8842301 + Math.floor(Math.random() * 90000);
+  document.getElementById('visitCount').textContent = n.toLocaleString();
+  render();
+  document.getElementById('searchIpt').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') doSearch();
+  });
+})();
+</script>
+</body>
+</html>
