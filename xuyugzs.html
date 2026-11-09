@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0E1513">
+<title>叙屿 NARRATIVE ISLE · 工作室</title>
+<style>
+  :root{
+    --ink:#0E1513;
+    --bg:#141D1B;
+    --bg2:#182321;
+    --paper:#F2EDE3;
+    --paper2:#DCD3C3;
+    --gold:#B08D52;
+    --gold2:#C9A46A;
+    --muted:#93A09A;
+    --dim:#5E6C67;
+    --line:rgba(242,237,227,.12);
+    --line2:rgba(242,237,227,.22);
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --serif:"Times New Roman",Georgia,"Songti SC",serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;height:100dvh;margin:0;background:
+    radial-gradient(58% 46% at 50% -6%,rgba(44,70,62,.34) 0%,rgba(7,12,11,0) 62%),
+    radial-gradient(42% 42% at 88% 92%,rgba(176,141,82,.05) 0%,rgba(7,12,11,0) 58%),
+    #070C0B;font-family:var(--sans);color:var(--paper);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overscroll-behavior:none}
+  body{display:flex;align-items:center;justify-content:center}
+
+  #app{
+    position:relative;width:100%;height:100%;height:100dvh;max-width:520px;overflow:hidden;
+    display:flex;flex-direction:column;
+    background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.05),0 40px 120px rgba(0,0,0,.65);
+  }
+  @media (min-width:560px){ #app{height:min(96vh,920px);border-radius:6px} }
+
+  .grain{position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.24;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.42'/></svg>");
+    background-size:140px 140px}
+
+  /* ---------- 顶栏 ---------- */
+  #top{
+    position:relative;z-index:30;flex:none;height:56px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;background:linear-gradient(180deg,rgba(18,26,24,.96),rgba(18,26,24,.72));
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid transparent;transition:border-color .4s,background .4s;
+  }
+  #top.solid{border-bottom-color:var(--line);background:rgba(18,26,24,.94)}
+  .logo{display:flex;align-items:baseline;gap:9px;font-size:14px;letter-spacing:.22em}
+  .logo b{font-weight:400}
+  .logo span{font-family:var(--serif);font-size:8px;letter-spacing:.26em;color:var(--dim)}
+  .top-tag{font-size:9px;letter-spacing:.2em;color:var(--gold);border:1px solid rgba(176,141,82,.42);
+    padding:5px 9px 4px;border-radius:1px}
+
+  /* ---------- 滚动区 ---------- */
+  #view{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;
+    scrollbar-width:none}
+  #view::-webkit-scrollbar{display:none}
+
+  .page{display:none}
+  .page.on{display:block;animation:pageIn .5s ease both}
+  @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .pad{padding:0 26px}
+  .sec{padding:44px 26px 0}
+  .sec:last-of-type{padding-bottom:40px}
+
+  /* ---------- 通用文字 ---------- */
+  .kicker{font-size:9px;letter-spacing:.34em;color:var(--gold);margin:0 0 16px;display:flex;align-items:center;gap:10px}
+  .kicker::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(176,141,82,.32),transparent)}
+  h2{font-size:21px;line-height:1.5;font-weight:400;letter-spacing:.04em;margin:0 0 18px}
+  h2 em{font-style:normal;color:var(--gold2)}
+  p{font-size:13px;line-height:1.95;color:#A7B3AC;margin:0 0 14px;letter-spacing:.015em}
+  p.hi{color:var(--paper);font-size:14px;line-height:1.9}
+  .note{font-size:11px;line-height:1.8;color:var(--dim);letter-spacing:.05em}
+
+  /* ---------- HERO ---------- */
+  #hero{position:relative;padding:34px 26px 40px;overflow:hidden;
+    background:
+      radial-gradient(120% 80% at 78% 0%,rgba(52,82,72,.5) 0%,rgba(20,29,27,0) 62%),
+      linear-gradient(180deg,#16201E 0%,#141D1B 100%)}
+  #hero .grid-art{position:absolute;right:-40px;top:14px;width:194px;height:194px;opacity:.5;pointer-events:none}
+  #hero .grid-art line,#hero .grid-art path,#hero .grid-art rect{stroke:rgba(201,164,106,.34);fill:none;stroke-width:.8}
+  #hero .grid-art .dot{fill:rgba(201,164,106,.7);stroke:none}
+  .breath{animation:breath 7s ease-in-out infinite}
+  @keyframes breath{0%,100%{opacity:.45}50%{opacity:.95}}
+
+  .h-eyebrow{position:relative;font-size:9px;letter-spacing:.36em;color:var(--gold);margin:0 0 26px}
+  .h-title{position:relative;font-size:52px;line-height:1;font-weight:300;letter-spacing:.1em;margin:0 0 10px}
+  .h-en{position:relative;font-family:var(--serif);font-size:10px;letter-spacing:.42em;color:var(--dim);margin:0 0 30px}
+  .h-line{position:relative;width:34px;height:1px;background:var(--gold);opacity:.7;margin-bottom:26px}
+  .h-claim{position:relative;font-size:21px;line-height:1.68;font-weight:300;letter-spacing:.03em;margin:0 0 20px}
+  .h-claim b{font-weight:400;color:var(--gold2)}
+  .h-sub{position:relative;font-size:12px;line-height:2;color:var(--muted);margin:0;letter-spacing:.04em}
+
+  .facts{position:relative;display:flex;margin-top:38px;border-top:1px solid var(--line);padding-top:20px}
+  .fact{flex:1;padding-right:10px}
+  .fact+.fact{padding-left:16px;border-left:1px solid var(--line)}
+  .fact b{display:block;font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:.06em;line-height:1.2;color:var(--paper)}
+  .fact span{display:block;font-size:9px;letter-spacing:.18em;color:var(--dim);margin-top:7px}
+
+  /* ---------- 三块业务 ---------- */
+  .cards{display:flex;flex-direction:column;gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .card{background:var(--bg);padding:22px 0 22px}
+  .card:first-child{padding-top:24px}
+  .card-i{display:flex;align-items:baseline;gap:14px;margin-bottom:10px}
+  .card-i .n{font-family:var(--serif);font-size:11px;color:var(--gold);letter-spacing:.1em}
+  .card-i .t{font-size:14.5px;letter-spacing:.05em;color:var(--paper)}
+  .card p{font-size:12px;line-height:1.85;margin:0;color:#94A19A}
+  .card .tag{display:inline-block;margin-top:12px;font-size:9px;letter-spacing:.16em;color:var(--gold);
+    border:1px solid rgba(176,141,82,.3);padding:4px 8px 3px}
+
+  .go{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:10.5px;letter-spacing:.16em;
+    color:var(--gold2);text-decoration:none;border-bottom:1px solid rgba(201,164,106,.32);padding-bottom:3px;
+    transition:color .3s,border-color .3s}
+  .go i{font-style:normal;transition:transform .3s}
+  .go:hover{color:#E0C08A;border-color:rgba(224,192,138,.7)}
+  .go:hover i{transform:translateX(3px)}
+  .go.sm{margin:6px 0 0;padding-bottom:1px;font-size:10px;letter-spacing:.1em;vertical-align:baseline}
+  .card .go{display:flex;width:-moz-fit-content;width:fit-content;margin-top:14px}
+
+  /* ---------- 日志 ---------- */
+  .log{display:flex;flex-direction:column}
+  .log-row{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .log-row:first-child{border-top:1px solid var(--line)}
+  .log-row .st{flex:none;width:56px;font-size:9.5px;letter-spacing:.14em;color:rgba(176,141,82,.9)}
+  .log-row .st.dim{color:var(--dim)}
+  .log-row .tx{font-size:12.5px;line-height:1.7;color:#A7B3AC}
+  .log-row .tx b{display:block;color:var(--paper);font-weight:400;font-size:13px;margin-bottom:3px}
+
+  /* ---------- 步骤 ---------- */
+  .steps{border-top:1px solid var(--line)}
+  .step{display:flex;gap:18px;padding:24px 0;border-bottom:1px solid var(--line)}
+  .step .n{flex:none;font-family:var(--serif);font-size:28px;line-height:1;color:rgba(201,164,106,.55);width:38px}
+  .step .b h3{font-size:14px;font-weight:400;letter-spacing:.08em;margin:0 0 8px;color:var(--paper)}
+  .step .b p{margin:0;font-size:12px;line-height:1.85;color:#94A19A}
+  .step .b .k{font-size:10px;letter-spacing:.12em;color:var(--gold);margin-top:10px;display:block}
+
+  /* ---------- 空间语法 ---------- */
+  .grammar{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .g-item{background:var(--bg);padding:20px 16px 18px}
+  .g-item b{display:block;font-size:15px;font-weight:400;letter-spacing:.14em;color:var(--gold2);margin-bottom:9px}
+  .g-item span{font-size:11.5px;line-height:1.8;color:#93A09A;display:block}
+
+  /* ---------- 服务 ---------- */
+  .svc{border:1px solid var(--line);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+  .svc::before{content:'';position:absolute;right:-40px;top:-40px;width:110px;height:110px;
+    background:radial-gradient(circle,rgba(176,141,82,.16),transparent 70%)}
+  .svc .lb{font-size:9px;letter-spacing:.22em;color:var(--dim);margin-bottom:12px}
+  .svc .tt{font-size:16px;letter-spacing:.06em;margin-bottom:12px;color:var(--paper)}
+  .svc .pr{font-family:var(--serif);font-size:19px;color:var(--gold2);letter-spacing:.04em;margin-bottom:12px}
+  .svc .pr i{font-family:var(--sans);font-style:normal;font-size:10px;color:var(--dim);letter-spacing:.1em;margin-left:6px}
+  .svc ul{margin:0;padding:0;list-style:none}
+  .svc li{font-size:11.5px;line-height:1.9;color:#93A09A;padding-left:12px;position:relative}
+  .svc li::before{content:'';position:absolute;left:0;top:.85em;width:4px;height:1px;background:var(--dim)}
+
+  /* ---------- 边界 ---------- */
+  .no-list{border-top:1px solid var(--line)}
+  .no-row{display:flex;gap:16px;padding:17px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .no-row .x{flex:none;font-size:10.5px;color:rgba(176,141,82,.72);letter-spacing:.1em;width:44px;padding-top:3px}
+  .no-row .y b{display:block;font-size:13px;font-weight:400;color:var(--paper);margin-bottom:6px;letter-spacing:.05em}
+  .no-row .y span{font-size:11.5px;line-height:1.75;color:var(--dim)}
+
+  /* ---------- 成员 ---------- */
+  .portrait{position:relative;height:262px;overflow:hidden;
+    background:linear-gradient(160deg,#2A3633 0%,#1A2422 60%,#141D1B 100%)}
+  .portrait svg{position:absolute;inset:0;width:100%;height:100%}
+  .portrait .vfade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,29,27,0) 40%,rgba(20,29,27,.95) 100%)}
+  .portrait .meta{position:absolute;left:26px;bottom:18px}
+  .portrait .meta .nm{font-size:26px;letter-spacing:.16em;font-weight:300;line-height:1.2}
+  .portrait .meta .ro{font-size:10px;letter-spacing:.2em;color:var(--gold);margin-top:9px}
+
+  .quote{border-left:1px solid rgba(176,141,82,.5);padding:2px 0 2px 16px;margin:24px 0 0}
+  .quote p{font-size:13.5px;line-height:1.95;color:var(--paper2);margin:0;font-weight:300}
+
+  .skills{margin-top:6px}
+  .sk{margin-bottom:18px}
+  .sk .r{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .sk .r b{font-size:12.5px;font-weight:400;letter-spacing:.06em;color:var(--paper)}
+  .sk .r span{font-size:10px;color:var(--dim);letter-spacing:.12em}
+  .sk .bar{height:2px;background:rgba(242,237,227,.13);position:relative}
+  .sk .bar i{position:absolute;left:0;top:0;width:100%;height:2px;background:linear-gradient(90deg,#8E6F3C,#D2AC70);box-shadow:0 0 8px rgba(201,164,106,.35);transform-origin:left;
+    transform:scaleX(0);transition:transform 1.1s cubic-bezier(.2,.7,.2,1)}
+  .sk.in .bar i{transform:scaleX(var(--p))}
+
+  .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .tools span{font-size:10px;letter-spacing:.1em;color:#9AA69F;border:1px solid var(--line2);padding:6px 10px 5px}
+
+  /* ---------- 联系 ---------- */
+  .cta-box{border:1px solid var(--line);padding:24px;margin-top:8px;
+    background:linear-gradient(165deg,rgba(176,141,82,.09) 0%,rgba(20,29,27,0) 60%)}
+  .cta-box .l{font-size:9px;letter-spacing:.26em;color:var(--gold);margin-bottom:14px}
+  .cta-box .big{font-size:17px;line-height:1.7;font-weight:300;letter-spacing:.03em;margin-bottom:20px}
+  .btn{display:block;width:100%;text-align:center;padding:15px;font-size:12px;letter-spacing:.2em;
+    color:#17211F;background:var(--paper);border:0;border-radius:1px;cursor:pointer;font-family:var(--sans);
+    text-decoration:none;transition:background .3s}
+  .btn:hover{background:#fff}
+
+  .rows{border-top:1px solid var(--line);margin-top:8px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+  .row .k{font-size:10px;letter-spacing:.18em;color:var(--dim)}
+  .row .v{font-size:12px;letter-spacing:.04em;color:var(--paper);display:flex;align-items:center;gap:10px}
+  .copy{font-size:9px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(176,141,82,.35);
+    background:none;padding:4px 7px 3px;cursor:pointer;font-family:var(--sans)}
+
+  .foot{margin-top:44px;padding:26px;border-top:1px solid var(--line);text-align:center}
+  .foot .s{font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:8px}
+  .foot .t{font-size:9px;letter-spacing:.16em;color:var(--dim);line-height:2}
+
+  /* ---------- 底部导航 ---------- */
+  #tabs{flex:none;position:relative;z-index:30;display:flex;height:60px;
+    background:rgba(18,26,24,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    background:none;border:0;cursor:pointer;color:var(--dim);font-family:var(--sans);
+    font-size:9px;letter-spacing:.16em;transition:color .3s;position:relative}
+  .tab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.1;transition:transform .35s}
+  .tab.on{color:var(--paper)}
+  .tab.on svg{transform:translateY(-1px);stroke:var(--gold2)}
+  .tab.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:16px;height:1px;background:var(--gold)}
+
+  /* ---------- 进场 ---------- */
+  .rv{opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+
+  .side{display:none;position:fixed;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;
+    font-size:9px;letter-spacing:.52em;color:rgba(242,237,227,.2);pointer-events:none;user-select:none}
+  .side.l{left:52px}
+  .side.r{right:52px;letter-spacing:.46em}
+  @media (min-width:900px){ .side{display:block} }
+
+  .toast{position:absolute;left:50%;bottom:84px;transform:translate(-50%,10px);z-index:70;
+    background:rgba(242,237,227,.95);color:#17211F;font-size:11px;letter-spacing:.14em;
+    padding:10px 16px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="side l" aria-hidden="true">NARRATIVE ISLE</div>
+<div class="side r" aria-hidden="true">STUDIO · 2026</div>
+
+<div id="app">
+  <div class="grain"></div>
+
+  <header id="top">
+    <div class="logo"><b>叙屿</b><span>NARRATIVE ISLE</span></div>
+    <div class="top-tag">独立工作室</div>
+  </header>
+
+  <div id="view">
+
+    <!-- ================= 首页 ================= -->
+    <section class="page on" id="p-home">
+      <div id="hero">
+        <svg class="grid-art" viewBox="0 0 200 200" aria-hidden="true">
+          <g class="breath">
+            <path d="M0 0 L70 96 M200 0 L70 96 M0 200 L70 96 M200 200 L70 96"/>
+            <path d="M70 96 L-20 236 M70 96 L44 236 M70 96 L108 236 M70 96 L180 236" opacity=".55"/>
+            <path d="M0 136 H142" opacity=".5"/>
+            <path d="M0 168 H142" opacity=".35"/>
+            <path d="M0 200 H142" opacity=".22"/>
+            <rect x="14" y="52" width="24" height="30" opacity=".85"/>
+            <rect x="14" y="94" width="24" height="18" opacity=".5"/>
+            <circle class="dot" cx="26" cy="66" r="1.6"/>
+          </g>
+        </svg>
+
+        <p class="h-eyebrow">STUDIO · 数字记忆与小型场景</p>
+        <h1 class="h-title">叙屿</h1>
+        <p class="h-en">NARRATIVE ISLE</p>
+        <div class="h-line"></div>
+        <p class="h-claim">把照片做成<br><b>可以走进去的地方</b>。</p>
+        <p class="h-sub">一个人，一间工作室。<br>专门做小型的虚拟场景叙事。</p>
+
+        <div class="facts">
+          <div class="fact"><b>01</b><span>创始人</span></div>
+          <div class="fact"><b>03</b><span>核心能力</span></div>
+          <div class="fact"><b>60s</b><span>一次入场</span></div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">我们做什么</p>
+        <h2>三件事，<em>一个内核</em>。</h2>
+        <p>所有项目都指向同一个问题：怎么让一段抽象的感觉，变成一个有边界、能走进去、待得住的空间。</p>
+        <div class="cards" style="margin-top:24px">
+          <div class="card">
+            <div class="card-i"><span class="n">01</span><span class="t">虚拟场景叙事</span></div>
+            <p>把一个具体的记忆、地点或品牌故事，做成 30–90 秒可漫游的小空间。不做宏大世界，只做一间屋子。</p>
+            <span class="tag">BLENDER · 空间脚本</span>
+          </div>
+          <div class="card">
+            <div class="card-i"><span class="n">02</span><span class="t">AI 辅助数字媒体</span></div>
+            <p>用生成式工具完成概念、材质与资产的第一版，再由人工收尾。AI 负责量，人负责那一口气。</p>
+            <span class="tag">概念 · 资产 · 效率</span>
+          </div>
+          <div class="card">
+            <div class="card-i"><span class="n">03</span><span class="t">数字记忆展厅</span></div>
+            <p>H5 形态的私人展厅。投递照片，生成一间属于你的房间，编号、铭牌、灯光都是独一份。<b style="color:var(--gold2);font-weight:400">个人使用免费。</b></p>
+            <span class="tag">H5 · 交互原型</span>
+            <a class="go" href="叙屿_数字记忆展厅.html">打开展厅原型 <i>→</i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">现在</p>
+        <h2>工作室日志</h2>
+        <div class="log">
+          <div class="log-row"><span class="st">在做</span><div class="tx"><b>三套空间原型</b>老屋午后 · 海岸阴天 · 夜街灯下，正在做光照与材质的第二轮。</div></div>
+          <div class="log-row"><span class="st">在做</span><div class="tx"><b>记忆展厅 H5 v0.1</b>投递—生成—入馆的完整链路已经跑通，等真实照片测试。</div></div>
+          <div class="log-row"><span class="st dim">在学</span><div class="tx"><b>Web 3D 与故事结构</b>知道自己短板在哪，就写在明面上。</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 工作 ================= -->
+    <section class="page" id="p-work">
+      <div class="sec" style="padding-top:36px">
+        <p class="kicker">工作方式</p>
+        <h2>三步，<em>不多不少</em>。</h2>
+        <p class="hi">记忆最怕两件事：麻烦，和被评判。所以流程必须短，短到人愿意把照片交出来。</p>
+
+        <div class="steps" style="margin-top:26px">
+          <div class="step"><span class="n">01</span><div class="b">
+            <h3>投递</h3>
+            <p>你给 3–12 张照片，选一个空间温度。不需要写文案，不需要整理时间线——那是我们的活。</p>
+            <span class="k">目标：90 秒内完成</span>
+          </div></div>
+          <div class="step"><span class="n">02</span><div class="b">
+            <h3>生成</h3>
+            <p>读取照片的时间、地点、光线与物件，推断空间类型，写出空间脚本，再拼装资产、烘焙光照。</p>
+            <span class="k">产出：一间可漫游的房间</span>
+          </div></div>
+          <div class="step"><span class="n">03</span><div class="b">
+            <h3>入馆</h3>
+            <p>拿到一个编号，一扇门。可以自己回来看，也可以把门牌发给某个人。</p>
+            <span class="k">产出：一个可分享的入口</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">空间语法</p>
+        <h2>一间屋子，<em>就是一段记忆</em>。</h2>
+        <p>不用时间轴，用建筑。人对空间的记忆，本来就比对日期的记忆牢。</p>
+        <div class="grammar" style="margin-top:22px">
+          <div class="g-item"><b>墙 · 时间</b><span>一面墙放一年。走完四面墙，就走过一段日子。</span></div>
+          <div class="g-item"><b>窗 · 地点</b><span>窗外决定这段记忆的外景。是海，是巷子，还是另一栋楼。</span></div>
+          <div class="g-item"><b>桌面 · 人物</b><span>放几件物件，就对应几个人。不必露脸。</span></div>
+          <div class="g-item"><b>光 · 情绪</b><span>暖光是团圆，逆光是告别。光比说话更准。</span></div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">交付节奏</p>
+        <h2>两周，<em>看得见东西</em>。</h2>
+        <p>不做漫长的黑箱。中途一定有能看的东西，不满意就在那时候说。</p>
+        <div class="log" style="margin-top:22px">
+          <div class="log-row"><span class="st">D1–3</span><div class="tx"><b>取材与概念</b>看照片、定空间温度，出一版手稿与参考图。</div></div>
+          <div class="log-row"><span class="st">D4–10</span><div class="tx"><b>场景搭建</b>建模、材质、布光。第五天给一次截图确认，方向不对就推翻。</div></div>
+          <div class="log-row"><span class="st">D11–14</span><div class="tx"><b>交互与交付</b>接入漫游、照片详情与分享卡片，交付可访问的链接。</div></div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">合作</p>
+        <h2>两种入口</h2>
+
+        <div class="svc">
+          <div class="lb">FOR INDIVIDUAL</div>
+          <div class="tt">个人 · 一个场景</div>
+          <div class="pr">免费 <i>/ 不限次数</i></div>
+          <ul>
+            <li>3–12 张照片，一间可漫游的房间</li>
+            <li>三套空间温度可选，含编号与铭牌</li>
+            <li>不用注册，照片不上传，随时进入</li>
+          </ul>
+        </div>
+
+        <div class="svc">
+          <div class="lb">FOR COMMISSION</div>
+          <div class="tt">定制 · 品牌与机构</div>
+          <div class="pr">按项目 <i>面议</i></div>
+          <ul>
+            <li>婚庆纪念、殡葬追思、文旅在地叙事</li>
+            <li>品牌周年与空间装置的概念场景</li>
+            <li>2–3 周交付，含 2 轮修改</li>
+          </ul>
+        </div>
+
+        <div class="note" style="margin-top:6px">个人展厅不收费，也不设次数上限。只有定制项目才按体量报价，且先给一版概念图，确认后再进入制作。</div>
+      </div>
+
+      <div class="sec rv" style="padding-bottom:44px">
+        <p class="kicker">边界</p>
+        <h2>有三件事，<em>我们不做</em></h2>
+        <p>替别人定义他的回忆，是一件需要克制的事。所以先把不做的说清楚。</p>
+        <div class="no-list" style="margin-top:20px">
+          <div class="no-row"><span class="x">NO.1</span><div class="y"><b>不做社交广场</b><span>展厅是私人的。没有关注、没有推荐、没有广场。</span></div></div>
+          <div class="no-row"><span class="x">NO.2</span><div class="y"><b>不做「数字复活」</b><span>不生成逝者的形象与声音。空间可以留住，人不可以替代。</span></div></div>
+          <div class="no-row"><span class="x">NO.3</span><div class="y"><b>不做永久承诺</b><span>不承诺云端永久保存。会给导出方案，数据最终归你。</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 成员 ================= -->
+    <section class="page" id="p-team">
+      <div class="portrait">
+        <svg viewBox="0 0 390 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="pg" x1="0" y1="0" x2="0.9" y2="1">
+              <stop offset="0" stop-color="#394842"/><stop offset="1" stop-color="#18211F"/>
+            </linearGradient>
+            <radialGradient id="dg" cx="50%" cy="58%" r="62%">
+              <stop offset="0" stop-color="#FFD9A6" stop-opacity=".72"/>
+              <stop offset=".55" stop-color="#C89A5C" stop-opacity=".28"/>
+              <stop offset="1" stop-color="#C89A5C" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="fl" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#FFCE96" stop-opacity=".30"/>
+              <stop offset="1" stop-color="#FFCE96" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="390" height="250" fill="url(#pg)"/>
+
+          <g stroke="rgba(242,237,227,.09)" fill="none" stroke-width=".8">
+            <path d="M0 212 H390"/>
+            <path d="M0 176 H390"/>
+            <path d="M52 250 V56 H338 V250"/>
+            <path d="M52 56 L100 28 H290 L338 56"/>
+            <path d="M52 56 L18 250 M338 56 L372 250"/>
+            <path d="M18 250 H372"/>
+          </g>
+
+          <g opacity=".55" fill="none" stroke="rgba(242,237,227,.16)" stroke-width=".8">
+            <rect x="76" y="120" width="26" height="46"/>
+            <rect x="288" y="132" width="22" height="40"/>
+          </g>
+
+          <rect x="146" y="72" width="98" height="140" fill="url(#dg)"/>
+          <g fill="none" stroke="rgba(240,206,152,.5)" stroke-width="1">
+            <rect x="148" y="74" width="94" height="136"/>
+            <line x1="195" y1="74" x2="195" y2="210" opacity=".35"/>
+          </g>
+          <ellipse cx="195" cy="216" rx="86" ry="24" fill="url(#fl)"/>
+        </svg>
+        <div class="vfade"></div>
+        <div class="meta">
+          <div class="nm">朱吴凡</div>
+          <div class="ro">创始人 · 虚拟场景设计 / AI 媒介</div>
+        </div>
+      </div>
+
+      <div class="sec" style="padding-top:30px">
+        <div class="quote">
+          <p>我更擅长把一段感觉，翻译成一间屋子。<br>剩下的部分，正在学。</p>
+        </div>
+
+        <p class="kicker" style="margin-top:34px">能力</p>
+        <div class="skills">
+          <div class="sk" style="--p:.82"><div class="r"><b>Blender 建模与布光</b><span>82</span></div><div class="bar"><i></i></div></div>
+          <div class="sk" style="--p:.74"><div class="r"><b>H5 交互原型</b><span>74</span></div><div class="bar"><i></i></div></div>
+          <div class="sk" style="--p:.66"><div class="r"><b>动态视觉与节奏</b><span>66</span></div><div class="bar"><i></i></div></div>
+          <div class="sk" style="--p:.44"><div class="r"><b>Web 3D / 前端工程</b><span>44</span></div><div class="bar"><i></i></div></div>
+        </div>
+        <div class="note">分数是给自己打的，偏低的那一项是真的偏低。我不打算把它说成优势。</div>
+
+        <div class="tools">
+          <span>Blender / Cycles</span><span>After Effects</span><span>Figma</span>
+          <span>HTML · CSS · JS</span><span>Midjourney</span><span>ComfyUI</span>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">为什么是一个人</p>
+        <h2>因为这件事<em>不能分工</em>。</h2>
+        <p class="hi">一个展厅的气质，散在不同人手里就散了。光线、比例、留白的呼吸，最好是同一个人从头盯到尾。</p>
+        <p>所以我先一个人跑完整条链路：从想法，到建模，到别人能在手机上打开它。等链路稳了，再找人补我最弱的那一段——大概率是前端工程。</p>
+      </div>
+
+      <div class="sec rv" style="padding-bottom:44px">
+        <p class="kicker">做过的事</p>
+        <div class="log">
+          <div class="log-row"><span class="st">空间</span><div class="tx"><b>三套记忆空间原型</b>老屋午后 / 海岸阴天 / 夜街灯下，Blender 建模与布光。</div></div>
+          <div class="log-row"><span class="st">交互</span><div class="tx"><b>叙屿数字记忆展厅 H5</b>投递、生成、漫游、分享卡片，端到端可运行。<a class="go sm" href="叙屿_数字记忆展厅.html">查看 →</a></div></div>
+          <div class="log-row"><span class="st dim">练习</span><div class="tx"><b>角色与动作</b>《缘结神》三视图还原、循环跑步与跳跃动画。</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 联系 ================= -->
+    <section class="page" id="p-contact">
+      <div class="sec" style="padding-top:36px">
+        <p class="kicker">联系</p>
+        <h2>如果你也有一张<br><em>舍不得删的照片</em>。</h2>
+        <p class="hi">聊一个场景、约一次合作、或者只是想看看它能做成什么样——都可以写信过来。一个人做事，回得不会太慢。</p>
+
+        <div class="cta-box">
+          <div class="l">START A CONVERSATION</div>
+          <div class="big">一封邮件，说清一张照片、<br>一个地方、或者一个人。</div>
+          <a class="btn" id="mailBtn" href="mailto:hello@narrativeisle.studio?subject=%E6%83%B3%E8%81%8A%E4%B8%80%E4%B8%AA%E5%9C%BA%E6%99%AF">写一封邮件</a>
+        </div>
+
+        <div class="rows">
+          <div class="row"><span class="k">EMAIL</span><span class="v" style="font-size:11.5px">hello@narrativeisle.studio<button class="copy" data-copy="hello@narrativeisle.studio">复制</button></span></div>
+          <div class="row"><span class="k">WECHAT</span><span class="v">narrative_isle<button class="copy" data-copy="narrative_isle">复制</button></span></div>
+          <div class="row"><span class="k">所在地</span><span class="v">中国 · 上海</span></div>
+          <div class="row"><span class="k">接单状态</span><span class="v" style="color:var(--gold2)">开放 · 12 月起</span></div>
+        </div>
+      </div>
+
+      <div class="sec rv">
+        <p class="kicker">常见问题</p>
+        <div class="no-list">
+          <div class="no-row"><span class="x">Q1</span><div class="y"><b>要收费吗？</b><span>个人展厅免费，不限次数，也不用注册。只有定制项目才报价。</span></div></div>
+          <div class="no-row"><span class="x">Q2</span><div class="y"><b>照片会被上传吗？</b><span>不会。当前版本全部在浏览器本地处理，关掉页面即销毁。</span></div></div>
+          <div class="no-row"><span class="x">Q3</span><div class="y"><b>一定要很多照片吗？</b><span>三张就够。少，反而更像记忆本来的样子。</span></div></div>
+          <div class="no-row"><span class="x">Q4</span><div class="y"><b>能做成视频吗？</b><span>能，但那不是我们要做的。视频只能被观看，空间可以被选择。</span></div></div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="s">叙屿 · NARRATIVE ISLE</div>
+        <div class="t">数字记忆与小型虚拟场景叙事<br>© 2026 叙屿数字工作室 · 保留所有权利</div>
+      </div>
+    </section>
+
+  </div>
+
+  <nav id="tabs">
+    <button class="tab on" data-p="p-home">
+      <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9.5 20v-5h5v5"/></svg>
+      <span>首页</span>
+    </button>
+    <button class="tab" data-p="p-work">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="7" width="17" height="12.5"/><path d="M9 7V4.5h6V7"/></svg>
+      <span>工作</span>
+    </button>
+    <button class="tab" data-p="p-team">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c0-3.4 3.1-5.6 7-5.6s7 2.2 7 5.6"/></svg>
+      <span>成员</span>
+    </button>
+    <button class="tab" data-p="p-contact">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13"/><path d="m3.5 6 8.5 6.5L20.5 6"/></svg>
+      <span>联系</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast">已复制</div>
+</div>
+
+<script>
+(function(){
+  var view = document.getElementById('view');
+  var top  = document.getElementById('top');
+  var tabs = document.querySelectorAll('.tab');
+  var pages = document.querySelectorAll('.page');
+
+  /* ---- 选项卡切换 ---- */
+  function go(id){
+    pages.forEach(function(p){ p.classList.toggle('on', p.id === id); });
+    tabs.forEach(function(t){ t.classList.toggle('on', t.dataset.p === id); });
+    view.scrollTop = 0;
+    top.classList.remove('solid');
+    requestAnimationFrame(reveal);
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ go(t.dataset.p); });
+  });
+
+  /* ---- 滚动时顶栏加线 ---- */
+  view.addEventListener('scroll', function(){
+    top.classList.toggle('solid', view.scrollTop > 8);
+  }, { passive:true });
+
+  /* ---- 进场动画 ---- */
+  var rvIO = null;
+  if ('IntersectionObserver' in window){
+    rvIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add('in'); rvIO.unobserve(e.target); }
+      });
+    }, { root: view, threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  }
+  function reveal(){
+    document.querySelectorAll('.page.on .rv').forEach(function(el){
+      if (el.classList.contains('in')) return;
+      if (rvIO){ rvIO.observe(el); } else { el.classList.add('in'); }
+    });
+  }
+
+  /* ---- 能力条：进入视口再动 ---- */
+  if ('IntersectionObserver' in window){
+    var skIO = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); skIO.unobserve(e.target); } });
+    }, { root: view, threshold: 0.3 });
+    document.querySelectorAll('.sk').forEach(function(el){ skIO.observe(el); });
+  } else {
+    document.querySelectorAll('.sk').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---- 复制 ---- */
+  var toast = document.getElementById('toast'), tTimer;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('on');
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ toast.classList.remove('on'); }, 1600);
+  }
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click', function(){
+      var txt = b.dataset.copy;
+      var done = function(){ showToast('已复制 · ' + txt); };
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(done).catch(function(){ fallback(txt, done); });
+      } else { fallback(txt, done); }
+    });
+  });
+  function fallback(txt, done){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch(e){ showToast('请手动复制'); }
+    document.body.removeChild(ta);
+  }
+
+  /* ---- 邮件按钮 ---- */
+  document.getElementById('mailBtn').addEventListener('click', function(){
+    showToast('正在打开邮件客户端');
+  });
+
+  /* ---- 初始化 ---- */
+  reveal();
+  setTimeout(reveal, 260);
+  window.addEventListener('resize', reveal);
+})();
+</script>
+</body>
+</html>
