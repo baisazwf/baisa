@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0E1513">
+<title>叙屿 · 数字记忆展厅</title>
+<style>
+  :root{
+    --ink:#0E1513;
+    --bg:#17211F;
+    --bg2:#1B2724;
+    --paper:#F2EDE3;
+    --paper2:#E4DCCB;
+    --gold:#B08D52;
+    --gold2:#C9A46A;
+    --muted:#8E9A93;
+    --dim:#61706A;
+    --line:rgba(242,237,227,.14);
+    --line2:rgba(242,237,227,.28);
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Source Han Sans SC",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;height:100dvh;margin:0;background:#080D0C;font-family:var(--sans);color:var(--paper);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overscroll-behavior:none}
+  body{display:flex;align-items:center;justify-content:center}
+
+  #app{
+    position:relative;width:100%;height:100%;height:100dvh;max-width:520px;overflow:hidden;
+    background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.05),0 40px 120px rgba(0,0,0,.6);
+  }
+  @media (min-width:560px){ #app{height:min(96vh,900px);border-radius:6px} }
+
+  .grain{position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.28;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.42'/></svg>");
+    background-size:140px 140px}
+
+  /* ---------- 屏幕 ---------- */
+  .screen{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .7s ease,transform .7s ease;
+    transform:translateY(12px)}
+  .screen.active{opacity:1;pointer-events:auto;transform:none;z-index:10}
+
+  /* ---------- 封面 ---------- */
+  #s-cover{padding:34px 26px 30px;display:flex;flex-direction:column;
+    background:
+      radial-gradient(120% 80% at 80% 0%,rgba(58,86,76,.55) 0%,rgba(23,33,31,0) 60%),
+      linear-gradient(180deg,#16201E 0%,#121A18 100%)}
+  .glyph{position:absolute;right:-110px;bottom:-210px;font-size:390px;line-height:.8;font-weight:300;
+    color:rgba(242,237,227,.022);pointer-events:none;letter-spacing:-10px;user-select:none}
+  .brandbar{display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;letter-spacing:.34em;
+    color:var(--paper);opacity:.9}
+  .brandbar .en{font-size:9px;letter-spacing:.34em;color:var(--dim)}
+  .rule{height:1px;background:var(--line2);margin-top:13px}
+
+  .cover-body{margin-top:auto;margin-bottom:auto;padding-top:52px}
+  .eyebrow{font-size:10px;letter-spacing:.3em;color:var(--gold);margin:0 0 18px}
+  #s-cover h1{font-size:clamp(32px,9.2vw,44px);line-height:1.28;font-weight:300;letter-spacing:.02em;margin:0}
+  .lead{font-size:13px;line-height:1.95;color:#A9B5AE;margin:24px 0 0;letter-spacing:.02em}
+
+  .cover-foot{padding-top:26px}
+  .enter{width:100%;display:flex;align-items:center;justify-content:space-between;
+    background:none;border:none;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);
+    padding:18px 2px;color:var(--paper);font-family:inherit;font-size:14px;letter-spacing:.22em;cursor:pointer}
+  .enter i{font-style:normal;color:var(--gold2);font-size:18px;transition:transform .4s}
+  .enter:active i{transform:translateX(6px)}
+  .cover-foot .sub{display:flex;justify-content:space-between;align-items:center;margin-top:16px;
+    font-size:10px;color:var(--dim);letter-spacing:.14em}
+  .link{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10px;
+    letter-spacing:.14em;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+  .link:active{color:var(--gold)}
+
+  /* ---------- 通用顶栏 ---------- */
+  .bar{display:flex;align-items:center;gap:14px;padding:22px 26px 0}
+  .bar .back{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--paper);
+    font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+  .bar .bar-t{flex:1;font-size:12px;letter-spacing:.24em;color:var(--paper)}
+  .bar .bar-t em{font-style:normal;color:var(--gold);margin-right:8px;font-size:10px}
+  .bar .bar-e{font-size:9px;letter-spacing:.3em;color:var(--dim)}
+
+  /* ---------- 投递 ---------- */
+  #s-drop{background:linear-gradient(180deg,#17211F 0%,#141C1A 100%);display:flex;flex-direction:column}
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:26px 26px 34px}
+  #s-drop h2{font-size:28px;font-weight:300;letter-spacing:.02em;margin:14px 0 0;line-height:1.35}
+  .sub{font-size:12.5px;line-height:1.9;color:var(--muted);margin:12px 0 0}
+
+  .picker{position:relative;margin-top:26px;border:1px solid var(--line);background:rgba(242,237,227,.02);
+    height:104px;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;
+    transition:border-color .3s,background .3s}
+  .picker:active{border-color:var(--gold);background:rgba(176,141,82,.06)}
+  .picker input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .picker .plus{font-size:20px;color:var(--gold);font-weight:300}
+  .picker span{font-size:12px;letter-spacing:.16em;color:#B9C3BC}
+
+  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:#0F1716}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;opacity:.94}
+  .thumb button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+    border:none;background:rgba(8,13,12,.72);color:#E9E2D3;font-size:12px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-family:inherit}
+
+  .hint{font-size:10px;line-height:1.85;color:var(--dim);margin:12px 0 0;letter-spacing:.04em}
+
+  .seg-label{font-size:10px;letter-spacing:.3em;color:var(--dim);margin:30px 0 12px}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .seg button{background:none;border:1px solid var(--line);color:var(--muted);font-family:inherit;
+    padding:12px 6px 11px;cursor:pointer;text-align:left;transition:.35s}
+  .seg b{display:block;font-size:17px;font-weight:300;color:#CFD8D1;letter-spacing:.1em;transition:.35s}
+  .seg span{display:block;font-size:9px;letter-spacing:.1em;margin-top:5px;color:var(--dim)}
+  .seg button.on{border-color:var(--gold);background:rgba(176,141,82,.07)}
+  .seg button.on b{color:var(--paper)}
+  .seg button.on span{color:var(--gold)}
+
+  .drop-foot{flex:none;padding:14px 26px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;
+    background:linear-gradient(0deg,rgba(16,23,21,1) 55%,rgba(16,23,21,.86) 100%);
+    border-top:1px solid rgba(242,237,227,.08)}
+  .primary{width:100%;padding:16px;background:var(--paper);color:#1A2421;border:none;font-family:inherit;
+    font-size:13px;letter-spacing:.26em;cursor:pointer;transition:.4s}
+  .primary:disabled{background:rgba(242,237,227,.12);color:rgba(242,237,227,.34);cursor:default}
+  .primary:not(:disabled):active{background:var(--gold2)}
+
+  /* ---------- 生成 ---------- */
+  #s-weave{background:#0F1716;display:flex;align-items:center;justify-content:center;padding:0 32px}
+  .weave-wrap{width:100%}
+  .weave-eyebrow{font-size:9px;letter-spacing:.36em;color:var(--gold);margin-bottom:26px}
+  #weaveLines{min-height:166px}
+  .wline{font-size:12.5px;line-height:2.1;color:#7E8B85;opacity:0;transform:translateY(6px);
+    transition:opacity .55s,transform .55s,color .55s;letter-spacing:.02em}
+  .wline.on{opacity:1;transform:none;color:#C6D0C9}
+  .wline.done{opacity:1;color:rgba(242,237,227,.24)}
+  .wbar{height:1px;background:rgba(242,237,227,.12);margin-top:26px;overflow:hidden}
+  .wbar i{display:block;height:100%;width:0%;background:var(--gold);transition:width .7s ease}
+  .wpct{margin-top:10px;font-size:9px;letter-spacing:.3em;color:var(--dim);text-align:right}
+
+  /* ---------- 展厅 ---------- */
+  #s-hall{background:#0B1211}
+  .stage{position:absolute;inset:0;overflow:hidden;perspective:520px;perspective-origin:50% 46%;
+    background:
+      radial-gradient(var(--lws,38%) var(--lws,30%) at var(--lx,32%) var(--ly,14%),
+        rgba(var(--lc,255,210,158), var(--la,.12)) 0%, rgba(var(--lc,255,210,158),0) 76%),
+      linear-gradient(180deg,#0A100F 0%,#0A100F 32%,var(--floorc,#0B1211) 50%,var(--floorc,#0B1211) 100%);
+    touch-action:none;cursor:grab}
+  .stage:active{cursor:grabbing}
+  .room{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;
+    transform:rotateX(var(--pitch,0deg)) rotateY(var(--yaw,0deg));will-change:transform}
+
+  .wall{position:absolute;transform-style:preserve-3d;backface-visibility:hidden;
+    --wallshade:1;
+    background-color:var(--wallc);
+    background-image:
+      radial-gradient(var(--lws,38%) var(--lws,30%) at var(--lx,32%) var(--ly,14%),
+        rgba(var(--lc,255,210,158), var(--la,.22)) 0%, rgba(var(--lc,255,210,158),0) 78%),
+      var(--wallbase)}
+  .w-front::before,.w-back::before,.w-left::before,.w-right::before,.w-oct::before{
+    content:'';position:absolute;left:0;right:0;top:0;height:11%;pointer-events:none;
+    background:linear-gradient(180deg,rgba(0,0,0,.40) 0%,rgba(0,0,0,.10) 55%,rgba(0,0,0,0) 100%)}
+  .w-front::after,.w-back::after,.w-left::after,.w-right::after,.w-oct::after{
+    content:'';position:absolute;left:0;right:0;bottom:0;height:5%;pointer-events:none;
+    background:linear-gradient(0deg,rgba(0,0,0,.24) 0%,rgba(0,0,0,.06) 60%,rgba(0,0,0,0) 100%)}
+  .w-front{width:var(--W);height:calc(var(--H) + 320px);left:calc(var(--W) / -2);top:calc(var(--H) / -2);
+    transform:translateZ(calc(var(--D) / -2))}
+  .w-back{width:var(--W);height:calc(var(--H) + 320px);left:calc(var(--W) / -2);top:calc(var(--H) / -2);
+    transform:rotateY(180deg) translateZ(calc(var(--D) / -2))}
+  .w-left{width:var(--D);height:calc(var(--H) + 320px);left:calc(var(--D) / -2);top:calc(var(--H) / -2);
+    transform:rotateY(90deg) translateZ(calc(var(--W) / -2))}
+  .w-right{width:var(--D);height:calc(var(--H) + 320px);left:calc(var(--D) / -2);top:calc(var(--H) / -2);
+    transform:rotateY(-90deg) translateZ(calc(var(--W) / -2))}
+  .w-floor{width:var(--FW);height:var(--FD);
+    left:calc(var(--FW) / -2);top:calc(var(--FD) / -2);
+    transform:rotateX(90deg) translateZ(calc(var(--H) / -2 + 3px));
+    background-color:var(--floorc);
+    background-image:
+      radial-gradient(var(--lws,38%) var(--lws,30%) at var(--lx,32%) var(--ly,14%),
+        rgba(var(--lc,255,210,158), calc(var(--la,.22) * .85)) 0%, rgba(var(--lc,255,210,158),0) 76%),
+      var(--floorimg)}
+  .w-ceil{width:var(--FW);height:var(--FD);
+    left:calc(var(--FW) / -2);top:calc(var(--FD) / -2);
+    transform:rotateX(-90deg) translateZ(calc(var(--H) / -2 - 3px));
+    background:
+      radial-gradient(15% 15% at 50% 50%, rgba(var(--lc,255,220,176), var(--lcA,.07)) 0%, rgba(var(--lc,255,220,176),0) 66%),
+      radial-gradient(85% 85% at 50% 50%,#0D1413 0%,#040706 100%)}
+
+  /* 八角厅：八面墙环绕 */
+  .w-oct{width:calc(var(--SW) + 2px);height:calc(var(--H) + 320px);
+    background-image:none;
+    background-color:var(--wallc);
+    left:calc((var(--SW) + 2px) / -2);top:calc(var(--H) / -2);
+    transform:rotateY(calc(var(--i) * 45deg)) translateZ(calc(var(--R) * -1))}
+
+  /* 门洞 */
+  .door{position:absolute;bottom:88px;width:118px;height:246px;
+    background:linear-gradient(180deg,#0C1110 0%,#050908 100%);
+    box-shadow:inset 0 0 0 1px rgba(242,237,227,.09), 0 0 70px 18px rgba(var(--lc,255,210,158),.06)}
+  .door::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;
+    background:rgba(var(--lc,255,210,158),.16);filter:blur(3px)}
+
+  /* 地面织物 */
+  .rug{position:absolute;left:50%;top:50%;width:470px;height:330px;
+    transform:translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--H) / -2 + 2px)) translateY(260px);
+    border:1px solid rgba(242,237,227,.07);
+    background:radial-gradient(58% 58% at 50% 42%, rgba(var(--lc,255,210,158),.16) 0%, rgba(var(--lc,255,210,158),.04) 62%, rgba(0,0,0,0) 80%)}
+
+  /* 光照叠加层 */
+  .veil{position:absolute;inset:0;z-index:3;pointer-events:none;background:#050A09;
+    mix-blend-mode:multiply;opacity:var(--veil,0);transition:opacity .3s}
+  .lamp{position:absolute;inset:-14%;z-index:4;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(circle at var(--lx,32%) var(--ly,14%),
+      rgba(var(--lc,255,210,158),.085) 0%, rgba(var(--lc,255,210,158),.018) 36%,
+      rgba(var(--lc,255,210,158),0) var(--lw,62%));
+    opacity:var(--lop,.8);transition:opacity .3s}
+
+  .glow{position:absolute;pointer-events:none;filter:blur(28px);opacity:.85}
+  .win{position:absolute;pointer-events:none;filter:blur(14px);opacity:.6}
+
+  .plaque{position:absolute;transform:translateX(-50%);backface-visibility:hidden;padding:11px 15px;background:linear-gradient(180deg,#F0E7D4,#D9CDB4);
+    color:#2C2517;font-size:10px;line-height:1.85;letter-spacing:.16em;text-align:center;
+    box-shadow:0 8px 22px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.5) inset}
+  .art{position:absolute;transform:translateX(-50%);backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;
+    cursor:pointer;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+  .art .mat{padding:8px;background:#E3D9C6;box-shadow:0 18px 40px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.25) inset;
+    transition:transform .5s,box-shadow .5s}
+  .art img{display:block;width:100%;height:100%;object-fit:cover;filter:var(--phfilter)}
+  .art .cap{margin-top:10px;font-size:12px;letter-spacing:.14em;color:rgba(242,237,227,.46);white-space:nowrap}
+  .art:active .mat{transform:scale(.985)}
+
+  .hud-top{position:absolute;top:0;left:0;right:0;padding:20px 22px;display:flex;align-items:flex-start;gap:12px;
+    z-index:5;pointer-events:none;
+    background:linear-gradient(180deg,rgba(6,11,10,.72) 0%,rgba(6,11,10,0) 100%)}
+  .hud-top button{pointer-events:auto;width:32px;height:32px;border-radius:50%;border:1px solid rgba(242,237,227,.22);
+    background:rgba(10,16,15,.5);color:#E7E0D1;font-family:inherit;font-size:12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+  .hall-meta{flex:1;text-align:center;padding-top:2px}
+  .hall-no{font-size:10px;letter-spacing:.34em;color:#D8D1C2}
+  .hall-sub{font-size:9px;letter-spacing:.2em;color:var(--dim);margin-top:5px}
+
+  .hud-bottom{position:absolute;left:0;right:0;bottom:0;padding:18px 22px 24px;display:flex;align-items:center;
+    justify-content:center;gap:14px;font-size:9px;letter-spacing:.24em;color:var(--dim);z-index:5;pointer-events:none;
+    background:linear-gradient(0deg,rgba(6,11,10,.7) 0%,rgba(6,11,10,0) 100%)}
+  .hud-bottom i{width:26px;height:1px;background:rgba(242,237,227,.18)}
+
+  /* ---------- 光线面板 ---------- */
+  #ov-light .sheet-inner{background:#131C1A;padding-bottom:34px;position:relative}
+  #ov-light .sheet-close{top:18px;right:18px;font-size:18px}
+  .lt-h{font-size:20px;font-weight:300;letter-spacing:.08em;margin:4px 0 8px}
+  .lt-sub{font-size:11px;line-height:1.9;color:var(--dim);margin:0 0 24px}
+  .lt-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .lt-row>span{width:40px;flex:none;font-size:10px;letter-spacing:.18em;color:var(--muted)}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:22px;background:none;margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:1px;background:rgba(242,237,227,.24)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+    background:var(--paper);margin-top:-5.5px;box-shadow:0 0 0 4px rgba(176,141,82,.14)}
+  .lt-label{font-size:9px;letter-spacing:.28em;color:var(--dim);margin:24px 0 12px}
+  .hue-wrap{position:relative;height:28px}
+  .hue-bar{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,#FFB870 0%,#FFF6E8 52%,#BAD4E8 100%)}
+  #lHue{position:absolute;left:0;top:0;width:100%;height:28px}
+  #lHue::-webkit-slider-runnable-track{height:28px;background:transparent}
+  #lHue::-webkit-slider-thumb{width:14px;height:14px;margin-top:7px;border:2px solid #131C1A;
+    background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.55)}
+  .pad{position:relative;width:100%;height:126px;border:1px solid var(--line);background:rgba(255,255,255,.02);
+    touch-action:none;cursor:crosshair;overflow:hidden}
+  .pad::before,.pad::after{content:'';position:absolute;background:rgba(242,237,227,.06)}
+  .pad::before{left:50%;top:0;bottom:0;width:1px}
+  .pad::after{top:50%;left:0;right:0;height:1px}
+  #lDot{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,rgba(255,214,160,.85) 52%,rgba(255,214,160,0) 100%);
+    box-shadow:0 0 20px 7px rgba(255,214,160,.3);pointer-events:none}
+  .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .presets button{background:none;border:1px solid var(--line);color:var(--muted);font-family:inherit;
+    font-size:10px;letter-spacing:.12em;padding:11px 2px;cursor:pointer;transition:.3s}
+  .presets button.on{border-color:var(--gold);color:var(--paper);background:rgba(176,141,82,.08)}
+
+  /* ---------- 浮层 ---------- */
+  .sheet{position:absolute;inset:0;z-index:80;opacity:0;pointer-events:none;transition:opacity .45s;
+    display:flex;align-items:flex-end;justify-content:center;background:rgba(6,11,10,.72);backdrop-filter:blur(10px)}
+  .sheet.on{opacity:1;pointer-events:auto}
+  .sheet-inner{width:100%;max-height:92%;overflow-y:auto;background:#131C1A;padding:26px 24px 30px;
+    transform:translateY(24px);transition:transform .45s cubic-bezier(.2,.7,.2,1);border-top:1px solid var(--line)}
+  .sheet.on .sheet-inner{transform:none}
+  .sheet-close{position:absolute;top:14px;right:16px;width:32px;height:32px;border:none;background:none;
+    color:#9AA69F;font-size:20px;line-height:1;cursor:pointer;font-family:inherit;z-index:2}
+
+  #ov-photo .ph{width:100%;background:#0B1211;overflow:hidden;margin-bottom:18px}
+  #ov-photo .ph img{width:100%;display:block;max-height:46vh;object-fit:cover}
+  #ov-photo h3{font-size:20px;font-weight:300;margin:0;letter-spacing:.04em}
+  .ph-meta{font-size:10px;letter-spacing:.2em;color:var(--dim);margin:8px 0 0}
+  .ph-ai{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+  .ph-ai dt{font-size:9px;letter-spacing:.24em;color:var(--gold);margin-bottom:10px}
+  .ph-ai p{font-size:11.5px;line-height:2;color:#9FABA4;margin:0}
+  .ph-note{font-size:9px;color:var(--dim);margin-top:14px;letter-spacing:.05em;line-height:1.8}
+
+  #ov-card .sheet-inner{background:#0F1716;text-align:center;padding-bottom:36px}
+  #cardCanvas{width:100%;display:block;border:1px solid var(--line)}
+  .card-actions{display:flex;gap:10px;margin-top:18px}
+  .card-actions button,.card-actions a{flex:1;padding:13px;text-align:center;border:1px solid var(--line2);
+    background:none;color:var(--paper);font-family:inherit;font-size:11px;letter-spacing:.2em;
+    text-decoration:none;cursor:pointer}
+  .card-actions a{background:var(--paper);color:#1A2421;border-color:var(--paper)}
+
+  #ov-about .sheet-inner{background:#131C1A;padding-bottom:40px}
+  #ov-about h3{font-size:22px;font-weight:300;margin:6px 0 0;letter-spacing:.06em}
+  #ov-about .en{font-size:9px;letter-spacing:.34em;color:var(--gold);margin:10px 0 18px}
+  #ov-about p{font-size:12px;line-height:2;color:#A3AFA8;margin:0 0 14px}
+  .steps{margin:22px 0 8px;border-top:1px solid var(--line)}
+  .step{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .step b{font-size:10px;color:var(--gold);letter-spacing:.1em;font-weight:400;padding-top:2px}
+  .step div{flex:1}
+  .step span{display:block;font-size:12px;color:#D9D2C3;letter-spacing:.08em}
+  .step em{display:block;font-style:normal;font-size:10.5px;line-height:1.9;color:var(--dim);margin-top:4px}
+  .about-foot{font-size:9px;letter-spacing:.16em;color:var(--dim);margin-top:22px;line-height:2}
+
+  @media (max-height:700px){
+    #s-cover h1{font-size:clamp(28px,8vw,34px)}
+    .lead{font-size:12px;margin-top:16px}
+    .glyph{font-size:400px;bottom:-90px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="grain"></div>
+
+  <!-- 封面 -->
+  <section class="screen active" id="s-cover">
+    <div class="glyph">屿</div>
+    <div class="brandbar"><span>叙 屿</span><span class="en">NARRATIVE ISLE</span></div>
+    <div class="rule"></div>
+
+    <div class="cover-body">
+      <p class="eyebrow">数字记忆展厅 · 概念原型</p>
+      <h1>把照片做成<br>可以走进去的地方</h1>
+      <p class="lead">上传一段生活的照片，它会被做成一间小小的虚拟展厅。<br>它不替你回忆，只让你回得去。</p>
+    </div>
+
+    <div class="cover-foot">
+      <button class="enter" id="enter"><span>轻 触 进 入</span><i>→</i></button>
+      <div class="sub">
+        <span>竖屏体验更佳 · 约 60 秒</span>
+        <button class="link" data-sheet="ov-about">关于叙屿</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 投递 -->
+  <section class="screen" id="s-drop">
+    <div class="bar">
+      <button class="back" id="dropBack">←</button>
+      <div class="bar-t"><em>01</em>投递</div>
+      <div class="bar-e">DROP</div>
+    </div>
+
+    <div class="scroll">
+      <h2>选一段记忆</h2>
+      <p class="sub">5–12 张，同一段时光。它们会被放进同一间屋子——<br>不必挑最好看的，挑你还能记起当时在做什么的。</p>
+
+      <div class="picker">
+        <input type="file" id="file" accept="image/*" multiple>
+        <div class="plus">＋</div><span>选择照片</span>
+      </div>
+
+      <div class="thumbs" id="thumbs"></div>
+      <p class="hint" id="countHint">照片只在你的浏览器里处理，不会上传到任何服务器。</p>
+
+      <div class="seg-label">空间温度</div>
+      <div class="seg" id="seg">
+        <button class="on" data-temp="warm"><b>暖</b><span>老屋 · 午后</span></button>
+        <button data-temp="fade"><b>旧</b><span>海岸 · 阴天</span></button>
+        <button data-temp="night"><b>夜</b><span>街道 · 灯下</span></button>
+      </div>
+
+      <div class="seg-label">空间形态</div>
+      <div class="seg" id="segShape">
+        <button class="on" data-shape="square"><b>方厅</b><span>四面 · 聚拢</span></button>
+        <button data-shape="corridor"><b>长廊</b><span>两侧 · 展廊</span></button>
+        <button data-shape="octa"><b>八角</b><span>环绕 · 八面</span></button>
+      </div>
+    </div>
+
+    <div class="drop-foot">
+      <button class="primary" id="weaveBtn" disabled>生成我的展厅</button>
+      <button class="link" id="sampleBtn">没有照片？用一段示例记忆</button>
+    </div>
+  </section>
+
+  <!-- 生成 -->
+  <section class="screen" id="s-weave">
+    <div class="weave-wrap">
+      <div class="weave-eyebrow">W E A V I N G</div>
+      <div id="weaveLines"></div>
+      <div class="wbar"><i id="weaveBar"></i></div>
+      <div class="wpct" id="weavePct">0%</div>
+    </div>
+  </section>
+
+  <!-- 展厅 -->
+  <section class="screen" id="s-hall">
+    <div class="stage" id="stage">
+      <div class="room" id="room"></div>
+      <div class="veil"></div>
+      <div class="lamp"></div>
+    </div>
+    <div class="hud-top">
+      <button id="hallBack">←</button>
+      <div class="hall-meta">
+        <div class="hall-no" id="hallNo">NO. 0000</div>
+        <div class="hall-sub" id="hallSub">暖 · 0 张</div>
+      </div>
+      <button id="lightBtn" aria-label="调节光线">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"/>
+        </svg>
+      </button>
+      <button id="cardBtn" style="width:auto;padding:0 11px;font-size:9px;letter-spacing:.14em">卡片</button>
+    </div>
+    <div class="hud-bottom"><span>拖动环视</span><i></i><span>轻点照片</span><i></i><span>可调光线</span></div>
+  </section>
+
+  <!-- 光线面板 -->
+  <div class="sheet" id="ov-light">
+    <div class="sheet-inner">
+      <button class="sheet-close" data-close="ov-light">×</button>
+      <div class="lt-h">光线</div>
+      <p class="lt-sub">这间屋子的灯交给你。调暗一点，照片会更像记忆；调亮一点，能看清墙面。</p>
+
+      <div class="lt-row"><span>亮度</span><input type="range" id="lLi" min="8" max="100" value="88"></div>
+      <div class="lt-row"><span>光斑</span><input type="range" id="lLw" min="16" max="120" value="62"></div>
+
+      <div class="lt-label">色温</div>
+      <div class="hue-wrap">
+        <div class="hue-bar"></div>
+        <input type="range" id="lHue" min="0" max="100" value="18">
+      </div>
+
+      <div class="lt-label">光源方位 · 拖动</div>
+      <div class="pad" id="lPad"><i id="lDot"></i></div>
+
+      <div class="lt-label">预设</div>
+      <div class="presets" id="lPresets">
+        <button data-preset="noon">午后</button>
+        <button data-preset="dusk">黄昏</button>
+        <button data-preset="lamp">夜灯</button>
+        <button data-preset="cool">冷白</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 照片浮层 -->
+  <div class="sheet" id="ov-photo">
+    <div class="sheet-inner">
+      <button class="sheet-close" data-close="ov-photo">×</button>
+      <div class="ph"><img id="phImg" alt=""></div>
+      <h3 id="phTitle">—</h3>
+      <p class="ph-meta" id="phMeta">—</p>
+      <div class="ph-ai">
+        <dt>AI 读到的线索</dt>
+        <p id="phAi">—</p>
+      </div>
+      <p class="ph-note">概念原型：以上线索为示意推断，仅用于生成空间。原图与原始信息始终保留，不做修改。</p>
+    </div>
+  </div>
+
+  <!-- 分享卡 -->
+  <div class="sheet" id="ov-card">
+    <div class="sheet-inner">
+      <button class="sheet-close" data-close="ov-card">×</button>
+      <canvas id="cardCanvas" width="1080" height="1350"></canvas>
+      <div class="card-actions">
+        <a id="cardDl" download="叙屿_展厅卡片.png">下载卡片</a>
+        <button data-close="ov-card">回到展厅</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关于 -->
+  <div class="sheet" id="ov-about">
+    <div class="sheet-inner">
+      <button class="sheet-close" data-close="ov-about">×</button>
+      <h3>叙屿</h3>
+      <div class="en">NARRATIVE ISLE</div>
+      <p>叙事的叙，岛屿的屿，也谐音"絮语"——轻轻讲出来的那部分记忆。</p>
+      <p>一间数字记忆工作室，做 AI 辅助的小型虚拟场景叙事：把一个人的照片，变成一间可以走进去的屋子，收进属于他自己的展厅。</p>
+
+      <div class="steps">
+        <div class="step"><b>01</b><div><span>投递</span><em>选 5–12 张同一段记忆的照片，标一个温度。不写文字，不填表单。</em></div></div>
+        <div class="step"><b>02</b><div><span>生成</span><em>读时间、地点、人物与色调，写一份空间脚本，再拼出 3D 场景。</em></div></div>
+        <div class="step"><b>03</b><div><span>入馆</span><em>第一人称漫游。照片是空间里的物件：墙上、桌上、窗上。</em></div></div>
+      </div>
+
+      <p class="about-foot">边界 · 不做社交广场 / 不做"数字复活" / 不做云端永久承诺<br>
+      本页为《设计导论》课程作业概念原型 · 朱吴凡 · 2026.11</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 状态 ============ */
+  const state = {
+    photos: [],           // {src,title,when,place,ai:[..]}
+    temp: 'warm',
+    shape: 'square',
+    hallNo: '0000'
+  };
+
+  const TEMPS = {
+    warm:  {name:'暖', room:'老屋 · 午后', wallc:'#3A302A', floorc:'#241B16',
+            wallbase:'linear-gradient(180deg,#453628 0%,#2B211A 100%)',
+            floorimg:'repeating-linear-gradient(90deg,rgba(0,0,0,.07) 0 2px, rgba(0,0,0,0) 2px 108px), linear-gradient(180deg,#271D17 0%,#241B16 100%)',
+            ph:'saturate(1.02) contrast(1.02) brightness(.96)',
+            light:{li:.88, lc:[255,210,158], lx:28, ly:14, lw:62}},
+    fade:  {name:'旧', room:'海岸 · 阴天', wallc:'#333B3C', floorc:'#222A2B',
+            wallbase:'linear-gradient(180deg,#3A4241 0%,#2A3132 100%)',
+            floorimg:'linear-gradient(180deg,#252D2E 0%,#222A2B 100%)',
+            ph:'saturate(.86) contrast(.98) brightness(.98)',
+            light:{li:.9, lc:[206,222,222], lx:50, ly:3, lw:86}},
+    night: {name:'夜', room:'街道 · 灯下', wallc:'#212931', floorc:'#131A1E',
+            wallbase:'linear-gradient(180deg,#273035 0%,#1A2126 100%)',
+            floorimg:'linear-gradient(180deg,#131A1D 0%,#101618 100%)',
+            ph:'saturate(.82) contrast(1.06) brightness(.8)',
+            light:{li:.72, lc:[150,196,188], lx:76, ly:22, lw:48}}
+  };
+
+  // 空间形态：方厅 / 长廊 / 八角厅
+  const SHAPES = {
+    square:   {name:'方厅', room:'四面墙', kind:'box', W:1000, D:1000, H:800, caps:[3,3,3,3], persp:520},
+    corridor: {name:'长廊', room:'展廊',   kind:'box', W:900,  D:1100, H:700, caps:[2,5,0,5], persp:520},
+    octa:     {name:'八角', room:'八面环绕',kind:'oct', R:545,  H:800,
+               caps:[2,2,2,2,2,2,2,2], persp:520}
+  };
+
+  // 光线
+  const light = {li:.88, lc:[255,210,158], lx:28, ly:14, lw:62};
+  const LIGHT_PRESETS = {
+    noon: {li:.95, lc:[255,214,168], lx:30, ly:8,  lw:70, hue:22},
+    dusk: {li:.76, lc:[255,146,90],  lx:12, ly:30, lw:52, hue:4},
+    lamp: {li:.40, lc:[150,190,180], lx:76, ly:24, lw:40, hue:74},
+    cool: {li:1,   lc:[214,232,236], lx:50, ly:2,  lw:88, hue:92}
+  };
+  const TEMP_A = [255,184,112], TEMP_M = [255,246,232], TEMP_B = [186,212,232];
+  function hueRGB(t){
+    const a = t<0.5 ? TEMP_A : TEMP_M, b = t<0.5 ? TEMP_M : TEMP_B;
+    const k = t<0.5 ? t/0.5 : (t-0.5)/0.5;
+    return a.map((v,i)=> Math.round(v + (b[i]-v)*k));
+  }
+  function rgbToHuePos(c){
+    // 粗略反推色温位置，仅用于滑块回显
+    if(c[2] > c[0] + 20) return 78;
+    if(c[0] > 240 && c[1] > 200) return 20;
+    return 40;
+  }
+
+  /* ============ 工具 ============ */
+  const $ = s => document.querySelector(s);
+  const el = (tag, cls, html) => { const n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; };
+  const clamp = (v,a,b)=> Math.max(a, Math.min(b,v));
+  function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id)); }
+  function openSheet(id){ document.getElementById(id).classList.add('on'); }
+  function closeSheet(id){ document.getElementById(id).classList.remove('on'); }
+
+  /* ============ 示例记忆：程序化生成 ============ */
+  const SAMPLE = [
+    {t:'老屋门口', w:'2019 · 夏', p:'闽北 · 外婆家', tone:'暖', light:'侧逆光 · 午后四点', objs:'木门 / 竹椅 / 一只猫'},
+    {t:'外婆的院子', w:'2016 · 春', p:'闽北 · 天井', tone:'暖', light:'顶光 · 阴天',     objs:'晾衣绳 / 水缸 / 青苔'},
+    {t:'海边的下午', w:'2021 · 秋', p:'厦门 · 环岛路', tone:'旧', light:'漫射 · 海雾',    objs:'潮线 / 拖鞋 / 塑料袋'},
+    {t:'夜里的便利店', w:'2022 · 冬', p:'上海 · 长宁', tone:'夜', light:'冷白灯 · 逆光',  objs:'冰柜 / 关东煮 / 玻璃'},
+    {t:'走廊尽头', w:'2018 · 夏', p:'高中 · 三楼', tone:'旧', light:'长条窗 · 硬光',      objs:'铁柜 / 瓷砖 / 影子'},
+    {t:'除夕的餐桌', w:'2023 · 除夕', p:'家 · 客厅', tone:'暖', light:'吊灯 · 暖调',      objs:'圆桌 / 碗筷 / 电视光'}
+  ];
+
+  function makeSample(i){
+    const W=760, H=760;
+    const c = document.createElement('canvas'); c.width=W; c.height=H;
+    const x = c.getContext('2d');
+    const R = (a,b)=> a + Math.random()*(b-a);
+
+    function bg(c1,c2){
+      const g = x.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,c1); g.addColorStop(1,c2);
+      x.fillStyle=g; x.fillRect(0,0,W,H);
+    }
+    function glow(px,py,r,rgb,a){
+      const g = x.createRadialGradient(px,py,0,px,py,r);
+      g.addColorStop(0,'rgba('+rgb+','+a+')'); g.addColorStop(1,'rgba('+rgb+',0)');
+      x.fillStyle=g; x.beginPath(); x.arc(px,py,r,0,Math.PI*2); x.fill();
+    }
+    function grain(amount){
+      const img = x.getImageData(0,0,W,H), d = img.data;
+      for(let p=0;p<d.length;p+=4){
+        const n=(Math.random()-0.5)*amount;
+        d[p]+=n; d[p+1]+=n; d[p+2]+=n;
+      }
+      x.putImageData(img,0,0);
+    }
+    function vignette(){
+      const g = x.createRadialGradient(W/2,H*0.46,H*0.3,W/2,H*0.5,H*0.8);
+      g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.58)');
+      x.fillStyle=g; x.fillRect(0,0,W,H);
+    }
+
+    x.save();
+    if(i===0){ // 老屋门口
+      bg('#7a5c3c','#241811');
+      x.fillStyle='#2b1d13'; x.fillRect(0,H*0.66,W,H*0.34);
+      for(let k=0;k<7;k++){ x.fillStyle='rgba(0,0,0,'+(0.05+k*0.012)+')'; x.fillRect(0,H*(0.66+k*0.05),W,3); }
+      x.fillStyle='#100a07'; x.fillRect(W*0.5,H*0.1,W*0.46,H*0.56);
+      glow(W*0.73,H*0.3,190,'255,206,150',0.34);
+      x.fillStyle='rgba(0,0,0,.5)'; x.fillRect(W*0.45,H*0.08,10,H*0.6);
+      glow(W*0.16,H*0.24,300,'255,222,176',0.3);
+      x.strokeStyle='rgba(255,240,214,.2)'; x.lineWidth=3; x.strokeRect(W*0.05,H*0.05,W*0.3,H*0.32);
+    } else if(i===1){ // 院子
+      bg('#c9d0c6','#efe6d2');
+      x.fillStyle='#b3a68b'; x.fillRect(0,H*0.4,W,H*0.26);
+      for(let k=0;k<5;k++){ x.fillStyle='rgba(90,76,56,.16)'; x.fillRect(0,H*(0.4+k*0.05),W,6); }
+      x.fillStyle='#8e8164'; x.fillRect(0,H*0.66,W,H*0.34);
+      x.strokeStyle='rgba(60,48,34,.55)'; x.lineWidth=3;
+      x.beginPath(); x.moveTo(W*0.02,H*0.26); x.lineTo(W*0.98,H*0.3); x.stroke();
+      const cols=['#d8cdb8','#a8987a','#c2b49b'];
+      for(let k=0;k<3;k++){
+        const px=W*(0.16+k*0.26), py=H*0.275+k*8;
+        x.fillStyle=cols[k]; x.fillRect(px,py,W*0.14,H*(0.16+k*0.03));
+      }
+      glow(W*0.7,H*0.1,280,'255,250,232',0.45);
+    } else if(i===2){ // 海边
+      bg('#aec0c2','#dcd8c8');
+      x.fillStyle='#6d8384'; x.fillRect(0,H*0.54,W,H*0.2);
+      x.fillStyle='#b0a48b'; x.fillRect(0,H*0.72,W,H*0.28);
+      x.fillStyle='rgba(255,255,255,.28)'; x.fillRect(0,H*0.54,W,3);
+      for(let k=0;k<5;k++){
+        x.fillStyle='rgba(255,255,255,'+(0.1+k*0.03)+')';
+        x.fillRect(W*R(0.05,0.6),H*(0.6+k*0.03),W*R(0.1,0.3),2);
+      }
+      x.fillStyle='rgba(30,34,34,.35)'; x.fillRect(W*0.62,H*0.6,W*0.05,H*0.12);
+      glow(W*0.3,H*0.18,300,'255,252,240',0.4);
+    } else if(i===3){ // 便利店
+      bg('#0c1316','#16201f');
+      x.fillStyle='rgba(210,232,224,.92)'; x.fillRect(W*0.14,H*0.26,W*0.72,H*0.34);
+      x.fillStyle='rgba(20,30,32,.55)';
+      for(let k=0;k<3;k++) x.fillRect(W*0.14,H*(0.34+k*0.08),W*0.72,10);
+      x.fillStyle='rgba(255,214,140,.9)'; x.fillRect(W*0.14,H*0.24,W*0.72,10);
+      x.fillStyle='rgba(120,170,160,.18)'; x.fillRect(0,H*0.6,W,H*0.4);
+      x.fillStyle='rgba(210,232,224,.10)'; x.fillRect(W*0.2,H*0.62,W*0.6,H*0.22);
+      glow(W*0.5,H*0.4,300,'210,232,224',0.22);
+    } else if(i===4){ // 走廊
+      bg('#585c4e','#2a2e26');
+      const vx=W*0.52, vy=H*0.48;
+      x.strokeStyle='rgba(30,34,28,.5)'; x.lineWidth=3;
+      [[0,0],[W,0],[0,H],[W,H]].forEach(pt=>{
+        x.beginPath(); x.moveTo(pt[0],pt[1]); x.lineTo(vx,vy); x.stroke();
+      });
+      for(let k=1;k<6;k++){
+        const t=k/6;
+        x.strokeStyle='rgba(255,255,255,'+(0.1-t*0.07)+')'; x.lineWidth=2;
+        x.beginPath();
+        x.moveTo(W*0.5-W*0.5*t, H*0.48-H*0.48*t);
+        x.lineTo(W*0.5+W*0.5*t, H*0.48-H*0.48*t);
+        x.stroke();
+      }
+      x.fillStyle='rgba(236,240,226,.8)'; x.fillRect(vx-W*0.08,vy-H*0.1,W*0.16,H*0.2);
+      glow(vx,vy,220,'255,255,240',0.5);
+    } else { // 餐桌
+      bg('#33200f','#150c07');
+      glow(W*0.5,H*0.12,240,'255,206,140',0.5);
+      x.fillStyle='rgba(90,58,34,.9)'; x.beginPath();
+      x.ellipse(W*0.5,H*0.72,W*0.46,H*0.22,0,0,Math.PI*2); x.fill();
+      x.fillStyle='rgba(232,220,196,.72)';
+      [[0.36,0.7],[0.55,0.74],[0.7,0.68]].forEach(d=>{
+        x.beginPath(); x.ellipse(W*d[0],H*d[1],W*0.07,H*0.026,0,0,Math.PI*2); x.fill();
+      });
+      x.fillStyle='rgba(255,232,190,.55)'; x.beginPath();
+      x.ellipse(W*0.5,H*0.16,W*0.05,H*0.02,0,0,Math.PI*2); x.fill();
+    }
+    x.restore();
+
+    vignette();
+    grain(15);
+    return c.toDataURL('image/jpeg',0.86);
+  }
+
+  /* ============ 投递 ============ */
+  const thumbsEl = $('#thumbs');
+  const weaveBtn = $('#weaveBtn');
+  const fileInput = $('#file');
+
+  function addFiles(files){
+    Array.from(files).slice(0, 12 - state.photos.length).forEach(f=>{
+      if(!f.type.startsWith('image/')) return;
+      const fr = new FileReader();
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          // 压缩到 1200px 内，节省内存
+          const max = 1200, sc = Math.min(1, max/Math.max(img.width,img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          state.photos.push({
+            src: c.toDataURL('image/jpeg',0.88),
+            t: '照片 ' + String(state.photos.length+1).padStart(2,'0'), w: '今天', p: '本地',
+            ai: ['色调 暖', '主体 '+(2+(state.photos.length%3)), '光线 侧逆光'],
+            raw:true
+          });
+          renderThumbs();
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(f);
+    });
+  }
+
+  function renderThumbs(){
+    thumbsEl.innerHTML = '';
+    state.photos.forEach((ph, i)=>{
+      const d = el('div','thumb');
+      d.appendChild(el('img','', '')).src = ph.src;
+      const b = el('button','','×');
+      b.onclick = ()=>{ state.photos.splice(i,1); renderThumbs(); };
+      d.appendChild(b);
+      thumbsEl.appendChild(d);
+    });
+    updateCTA();
+    $('#countHint').textContent = state.photos.length
+      ? '已选 ' + state.photos.length + ' 张　·　照片只在你的浏览器里处理，不会上传到任何服务器。'
+      : '照片只在你的浏览器里处理，不会上传到任何服务器。';
+  }
+
+  function updateCTA(){
+    weaveBtn.disabled = state.photos.length === 0;
+    weaveBtn.textContent = state.photos.length
+      ? '生成我的展厅　·　' + TEMPS[state.temp].name + ' · ' + state.photos.length + ' 张'
+      : '生成我的展厅';
+  }
+
+  fileInput.addEventListener('change', e=>{ addFiles(e.target.files); fileInput.value=''; });
+
+  document.querySelectorAll('#seg button').forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      state.temp = b.dataset.temp;
+      Object.assign(light, JSON.parse(JSON.stringify(TEMPS[state.temp].light)));
+      syncLightUI();
+      updateCTA();
+    };
+  });
+
+  document.querySelectorAll('#segShape button').forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll('#segShape button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      state.shape = b.dataset.shape;
+    };
+  });
+
+  $('#sampleBtn').onclick = ()=>{
+    state.photos = SAMPLE.map((s,i)=>({
+      src: makeSample(i), t:s.t, w:s.w, p:s.p,
+      ai:['色调 '+s.tone, '光线 '+s.light, '物件 '+s.objs]
+    }));
+    renderThumbs();
+    $('#countHint').textContent = '已载入 6 张示例记忆　·　也可以随时换成你自己的照片。';
+  };
+
+  /* ============ 生成动画 ============ */
+  const LINES = [
+    '读取照片的时间、地点与光线',
+    '推断空间类型：一间朝北的老屋，两个窗',
+    '写下空间脚本：进门 → 左墙 → 窗边 → 回身',
+    '拼装资产 31 件 · 复用材质 9 种',
+    '烘焙光照 · 导出场景（4.2 MB）',
+    '展厅已建成'
+  ];
+
+  function weave(){
+    show('s-weave');
+    const box = $('#weaveLines'); box.innerHTML = '';
+    $('#weaveBar').style.width = '0%';
+    $('#weavePct').textContent = '0%';
+
+    const n = state.photos.length;
+    const lines = LINES.slice();
+    const shapeLine = {
+      square:   '推断空间类型：四面围合的小厅，光从一侧进来',
+      corridor: '推断空间类型：一条窄长的走廊，视线被拉向尽头',
+      octa:     '推断空间类型：八面环绕的小展厅，可以转一整圈'
+    };
+    lines[1] = shapeLine[state.shape];
+    lines[3] = '拼装资产 ' + (18 + n*4) + ' 件 · 复用材质 9 种';
+
+    let i = 0;
+    const tick = ()=>{
+      if(i < lines.length){
+        const p = el('div','wline', lines[i]);
+        box.appendChild(p);
+        requestAnimationFrame(()=>p.classList.add('on'));
+        if(i>0) box.children[i-1].classList.replace('on','done');
+        const pct = Math.round((i+1)/lines.length*100);
+        $('#weaveBar').style.width = pct + '%';
+        $('#weavePct').textContent = pct + '%';
+        i++;
+        setTimeout(tick, i===lines.length ? 900 : 760);
+      } else {
+        buildRoom();
+        show('s-hall');
+        introHall();
+      }
+    };
+    setTimeout(tick, 420);
+  }
+
+  /* ============ 展厅 ============ */
+  const roomEl = $('#room');
+  const stageEl = $('#stage');
+  let yaw = 0, pitch = 0, zoff = 0, dragging = false, lastX = 0, lastY = 0;
+
+  /* 把照片轮流分到各面墙，每面有容量上限 */
+  function distribute(list, caps){
+    const out = caps.map(()=>[]);
+    const q = list.slice();
+    const ids = caps.map((c,i)=> i).filter(i=> caps[i] > 0);
+    if(!ids.length) return out;
+
+    // 先让每面墙都有一张，转身不会有空墙
+    for(let k=0;k<ids.length && q.length;k++){
+      if(out[ids[k]].length < caps[ids[k]]) out[ids[k]].push(q.shift());
+    }
+    // 剩下的先给主视角墙，再顺着分给其他墙
+    while(q.length && out[0].length < caps[0]) out[0].push(q.shift());
+    let guard = 0;
+    while(q.length && guard++ < 80){
+      let placed = false;
+      for(let k=0;k<caps.length && q.length;k++){
+        if(out[k].length < caps[k]){ out[k].push(q.shift()); placed = true; }
+      }
+      if(!placed) break;
+    }
+    return out;
+  }
+
+  function wallArt(w, list){
+    const node = el('div','wall ' + w.cls);
+    if(w.i != null) node.style.setProperty('--i', w.i);
+    const n = list.length;
+    if(!n) return node;
+
+    // 照片尺寸跟着墙宽与张数走，避免挤在一起
+    const k = clamp(w.len / (n + 1) / 240 * 0.9, .55, 1.1);
+    const tier = [
+      {w:224,h:280}, {w:258,h:172}, {w:198,h:248}, {w:218,h:218}
+    ].map(t=>({w:Math.round(t.w*k), h:Math.round(t.h*k)}));
+
+    list.forEach((ph, i)=>{
+      const t = tier[(i + w.key.length) % tier.length];
+      const art = el('div','art');
+      art.style.left = ((i+1)/(n+1)*100) + '%';
+      art.style.bottom = (w.cls==='w-oct' ? '38%' : '43%');
+      art.style.width = t.w + 'px';
+      const mat = el('div','mat');
+      mat.style.width = t.w + 'px'; mat.style.height = t.h + 'px';
+      const im = el('img'); im.src = ph.src; im.alt = ph.t;
+      mat.appendChild(im);
+      art.appendChild(mat);
+      art.appendChild(el('div','cap', ph.t + '　' + ph.w));
+      art.onclick = (e)=>{ e.stopPropagation(); openPhoto(ph); };
+      node.appendChild(art);
+    });
+    return node;
+  }
+
+  function applyLight(){
+    const c = light.lc.join(',');
+    const st = stageEl.style;
+    st.setProperty('--lx', light.lx + '%');
+    st.setProperty('--ly', light.ly + '%');
+    st.setProperty('--lw', light.lw + '%');
+    st.setProperty('--lc', c);
+    st.setProperty('--lws', (light.lw * 0.62).toFixed(1) + '%');
+    st.setProperty('--lwsF', (light.lw * 1.05).toFixed(1) + '%');
+    st.setProperty('--la', (0.14 * light.li).toFixed(3));
+    st.setProperty('--lcA', (0.08 * light.li).toFixed(3));
+    st.setProperty('--lop', (0.5 + 0.5 * light.li).toFixed(3));
+    st.setProperty('--veil', ((1 - light.li) * 0.85).toFixed(3));
+  }
+
+  function buildRoom(){
+    const t = TEMPS[state.temp], sh = SHAPES[state.shape];
+    roomEl.innerHTML = '';
+    roomEl.style.setProperty('--H', sh.H + 'px');
+    roomEl.style.setProperty('--wallc', t.wallc);
+    roomEl.style.setProperty('--wallbase', t.wallbase);
+    roomEl.style.setProperty('--floorc', t.floorc);
+    roomEl.style.setProperty('--floorimg', t.floorimg);
+    roomEl.style.setProperty('--phfilter', t.ph);
+    stageEl.style.setProperty('--floorc', t.floorc);
+    stageEl.style.perspective = (sh.persp || 520) + 'px';
+
+    zoff = sh.zoff || 0;
+    setRoomTransform();
+
+    let walls;
+    if(sh.kind === 'box'){
+      roomEl.style.setProperty('--W', sh.W + 'px');
+      roomEl.style.setProperty('--D', sh.D + 'px');
+      roomEl.style.setProperty('--FW', '1360px');
+      roomEl.style.setProperty('--FD', '1360px');
+      walls = [
+        {cls:'w-front', key:'front', len:sh.W, cap:sh.caps[0]},
+        {cls:'w-right', key:'right', len:sh.D, cap:sh.caps[1]},
+        {cls:'w-back',  key:'back',  len:sh.W, cap:sh.caps[2]},
+        {cls:'w-left',  key:'left',  len:sh.D, cap:sh.caps[3]}
+      ];
+    } else {
+      const SW = Math.round(2 * sh.R * Math.tan(Math.PI / 8));
+      roomEl.style.setProperty('--R', sh.R + 'px');
+      roomEl.style.setProperty('--SW', SW + 'px');
+      roomEl.style.setProperty('--FW', '1360px');
+      roomEl.style.setProperty('--FD', '1360px');
+      walls = [];
+      for(let i=0;i<8;i++) walls.push({cls:'w-oct', key:'oct'+i, len:SW, cap:sh.caps[i], i:i});
+    }
+
+    roomEl.appendChild(el('div','wall w-ceil'));
+    roomEl.appendChild(el('div','wall w-floor'));
+
+    const groups = distribute(state.photos, sh.caps);
+    const nodes = walls.map((w, idx)=>{
+      const node = wallArt(w, groups[idx] || []);
+      roomEl.appendChild(node);
+      return node;
+    });
+
+    const c = light.lc.join(',');
+    const win = (parent, leftPct)=>{
+      if(!parent) return;
+      const d = el('div','win');
+      d.style.cssText = 'left:'+leftPct+'%;bottom:38%;width:118px;height:186px;' +
+        'background:linear-gradient(180deg,rgba('+c+',.40),rgba('+c+',.03));' +
+        'box-shadow:0 0 60px 26px rgba('+c+',.11)';
+      parent.appendChild(d);
+    };
+    const door = (parent, leftPct)=>{
+      if(!parent) return;
+      const d = el('div','door');
+      d.style.left = leftPct + '%';
+      parent.appendChild(d);
+    };
+
+    if(state.shape === 'square'){
+      if(state.temp !== 'night') win(nodes[0], 82);
+      door(nodes[1], 7);
+    } else if(state.shape === 'corridor'){
+      win(nodes[1], 13); win(nodes[1], 58);
+      win(nodes[3], 20); win(nodes[3], 64);
+      win(nodes[0], 82);
+    } else {
+      door(nodes[7], 38);
+    }
+
+    // 照片最少的那面墙挂铭牌
+    let target = null, least = 99;
+    walls.forEach((w, idx)=>{
+      if(groups[idx].length < least){ least = groups[idx].length; target = nodes[idx]; }
+    });
+    if(target){
+      const pl = el('div','plaque','叙屿 · 数字记忆展厅<br>NO. '+state.hallNo+'<br>'+t.room);
+      pl.style.left = '50%'; pl.style.bottom = '34%';
+      target.appendChild(pl);
+    }
+
+    $('#hallNo').textContent = 'NO. ' + state.hallNo;
+    $('#hallSub').textContent = t.name + ' · ' + sh.name + ' · ' + state.photos.length + ' 张';
+
+    applyLight();
+  }
+
+  function setRoomTransform(){
+    roomEl.style.transform = 'translateZ('+zoff+'px) rotateX('+pitch+'deg) rotateY('+yaw+'deg)';
+  }
+
+  // 拖拽环视
+  let moved = 0;
+  stageEl.addEventListener('pointerdown', e=>{
+    dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
+  });
+  stageEl.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    lastX = e.clientX; lastY = e.clientY;
+    yaw = clamp(yaw + dx*0.22, -180, 180);
+    pitch = clamp(pitch - dy*0.06, -7, 7);
+    setRoomTransform();
+  });
+  ['pointerup','pointercancel'].forEach(ev=> window.addEventListener(ev, ()=> dragging=false));
+
+  window.addEventListener('keydown', e=>{
+    if(!$('#s-hall').classList.contains('active')) return;
+    if(e.key==='ArrowLeft'){ yaw = clamp(yaw-8,-180,180); setRoomTransform(); }
+    if(e.key==='ArrowRight'){ yaw = clamp(yaw+8,-180,180); setRoomTransform(); }
+  });
+
+  let introTimer = null;
+  function introHall(){
+    yaw = -26; pitch = 0; setRoomTransform();
+    clearTimeout(introTimer);
+    introTimer = setTimeout(()=>{
+      roomEl.style.transition = 'transform 1.6s cubic-bezier(.2,.7,.2,1)';
+      yaw = 0; setRoomTransform();
+      setTimeout(()=>{ roomEl.style.transition=''; }, 1750);
+    }, 260);
+  }
+
+  /* ============ 照片详情 ============ */
+  function openPhoto(ph){
+    $('#phImg').src = ph.src;
+    $('#phTitle').textContent = ph.t;
+    $('#phMeta').textContent = [ph.w, ph.p].filter(Boolean).join('　·　');
+    $('#phAi').innerHTML = ph.ai.join('<br>');
+    openSheet('ov-photo');
+  }
+
+  /* ============ 分享卡 ============ */
+  function drawCard(){
+    const cv = $('#cardCanvas'), x = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    x.fillStyle = '#131C1A'; x.fillRect(0,0,W,H);
+
+    // 顶栏
+    x.fillStyle = '#F2EDE3'; x.font = '300 30px "PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText('叙　屿', 80, 108);
+    x.fillStyle = '#6E7B75'; x.font = '300 18px "PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText('N A R R A T I V E   I S L E', 80, 146);
+
+    x.strokeStyle = 'rgba(242,237,227,.22)'; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(80,182); x.lineTo(W-80,182); x.stroke();
+
+    // 编号
+    x.fillStyle = '#B08D52'; x.font = '300 20px "PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText('展 厅 编 号', 80, 262);
+    x.fillStyle = '#F2EDE3'; x.font = '300 86px "PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText('NO. ' + state.hallNo, 80, 348);
+    x.fillStyle = '#8E9A93'; x.font = '300 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText(TEMPS[state.temp].room + '　·　' + SHAPES[state.shape].name + '　·　' + state.photos.length + ' 张', 80, 392);
+
+    // 图片网格
+    const ph = state.photos.slice(0,6);
+    const gx = 80, gy = 450, gw = W-160, gap = 12;
+    const cols = 3, cellW = (gw - gap*(cols-1))/cols, cellH = cellW*0.82;
+    const rows = Math.ceil(ph.length/cols);
+    for(let i=0;i<rows*cols;i++){
+      const cx = gx + (i%cols)*(cellW+gap);
+      const cy = gy + Math.floor(i/cols)*(cellH+gap);
+      x.fillStyle = '#0B1211'; x.fillRect(cx,cy,cellW,cellH);
+    }
+    // 图片异步绘制后重绘
+    let loaded = 0;
+    ph.forEach((p,i)=>{
+      const im = new Image();
+      im.onload = ()=>{
+        const cx = gx + (i%cols)*(cellW+gap);
+        const cy = gy + Math.floor(i/cols)*(cellH+gap);
+        const s = Math.max(cellW/im.width, cellH/im.height);
+        const dw = im.width*s, dh = im.height*s;
+        x.save(); x.beginPath(); x.rect(cx,cy,cellW,cellH); x.clip();
+        x.drawImage(im, cx+(cellW-dw)/2, cy+(cellH-dh)/2, dw, dh);
+        x.restore();
+        loaded++;
+        if(loaded === ph.length) finishCard(x, W, H, gy + rows*(cellH+gap));
+      };
+      im.src = p.src;
+    });
+
+    function finishCard(x, W, H, bottomY){
+      const lineY = Math.min(bottomY + 78, H-210);
+      x.strokeStyle = 'rgba(242,237,227,.18)'; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(80,lineY); x.lineTo(W-80,lineY); x.stroke();
+
+      x.fillStyle = '#F2EDE3'; x.font = '300 34px "PingFang SC","Microsoft YaHei",sans-serif';
+      x.fillText('每一段记忆，都值得一间屋子。', 80, lineY + 84);
+
+      x.fillStyle = '#61706A'; x.font = '300 18px "PingFang SC","Microsoft YaHei",sans-serif';
+      x.fillText('叙屿 · 数字记忆展厅　|　朱吴凡　2026.11', 80, H - 92);
+
+      $('#cardDl').href = cv.toDataURL('image/png');
+    }
+  }
+
+  /* ============ 事件绑定 ============ */
+  $('#enter').onclick = ()=>{ show('s-drop'); };
+  $('#dropBack').onclick = ()=>{ show('s-cover'); };
+  weaveBtn.onclick = ()=>{ if(!state.photos.length) return; weave(); };
+  $('#hallBack').onclick = ()=>{ show('s-drop'); };
+  $('#cardBtn').onclick = ()=>{ openSheet('ov-card'); drawCard(); };
+
+  document.querySelectorAll('[data-sheet]').forEach(b=> b.onclick = ()=> openSheet(b.dataset.sheet));
+  document.querySelectorAll('[data-close]').forEach(b=> b.onclick = ()=> closeSheet(b.dataset.close));
+  document.querySelectorAll('.sheet').forEach(s=> s.addEventListener('click', e=>{ if(e.target===s) s.classList.remove('on'); }));
+
+  /* ============ 光线面板 ============ */
+  const lPad = $('#lPad'), lDot = $('#lDot');
+
+  function syncLightUI(){
+    $('#lLi').value  = Math.round(light.li * 100);
+    $('#lLw').value  = Math.round(light.lw);
+    $('#lHue').value = rgbToHuePos(light.lc);
+    lDot.style.left = light.lx + '%';
+    lDot.style.top  = light.ly + '%';
+    document.querySelectorAll('#lPresets button').forEach(b=>b.classList.remove('on'));
+  }
+
+  $('#lLi').oninput = e => { light.li = e.target.value / 100; applyLight(); };
+  $('#lLw').oninput = e => { light.lw = +e.target.value; applyLight(); };
+  $('#lHue').oninput = e => { light.lc = hueRGB(e.target.value / 100); applyLight(); };
+
+  let padDrag = false;
+  function padMove(e){
+    if(!padDrag) return;
+    const r = lPad.getBoundingClientRect();
+    const x = clamp((e.clientX - r.left) / r.width, 0, 1);
+    const y = clamp((e.clientY - r.top) / r.height, 0, 1);
+    light.lx = Math.round(x * 100);
+    light.ly = Math.round(y * 100);
+    lDot.style.left = light.lx + '%';
+    lDot.style.top  = light.ly + '%';
+    applyLight();
+    document.querySelectorAll('#lPresets button').forEach(b=>b.classList.remove('on'));
+  }
+  lPad.addEventListener('pointerdown', e=>{ padDrag = true; padMove(e); lPad.setPointerCapture(e.pointerId); });
+  lPad.addEventListener('pointermove', padMove);
+  ['pointerup','pointercancel'].forEach(ev=> lPad.addEventListener(ev, ()=> padDrag = false));
+
+  document.querySelectorAll('#lPresets button').forEach(b=>{
+    b.onclick = ()=>{
+      const p = LIGHT_PRESETS[b.dataset.preset];
+      light.li = p.li; light.lc = p.lc.slice(); light.lx = p.lx; light.ly = p.ly; light.lw = p.lw;
+      applyLight(); syncLightUI();
+      b.classList.add('on');
+    };
+  });
+
+  $('#lightBtn').onclick = ()=>{
+    syncLightUI();
+    openSheet('ov-light');
+  };
+
+  // 编号
+  state.hallNo = String(Math.floor(1 + Math.random()*9)) + String(Math.floor(100 + Math.random()*900));
+
+  // 首次进入给一点光
+  setTimeout(()=>{ const e=$('#enter'); if(e) e.style.opacity='1'; }, 200);
+})();
+</script>
+</body>
+</html>
